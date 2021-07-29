@@ -157,7 +157,7 @@ func newFakeReconciler(initObjs ...runtime.Object) *EndpointReconciler {
 func processQueue(r reconcile.Reconciler, q workqueue.RateLimitingInterface) error {
 	for i := 0; i < q.Len(); i++ {
 		request, _ := q.Get()
-		if _, err := r.Reconcile(request.(ctrl.Request)); err != nil {
+		if _, err := r.Reconcile(context.Background(), request.(ctrl.Request)); err != nil {
 			return err
 		}
 		q.Done(request)
@@ -179,12 +179,10 @@ func TestProcessAgentInfo(t *testing.T) {
 	t.Run("agentinfo-added", func(t *testing.T) {
 		// Fake: endpoint added and agentinfo added event when controller start.
 		r.addEndpoint(event.CreateEvent{
-			Meta:   fakeEndpointA.GetObjectMeta(),
 			Object: fakeEndpointA,
 		}, queue)
 
 		r.addAgentInfo(event.CreateEvent{
-			Meta:   fakeAgentInfoA.GetObjectMeta(),
 			Object: fakeAgentInfoA,
 		}, queue)
 
@@ -206,9 +204,7 @@ func TestProcessAgentInfo(t *testing.T) {
 	t.Run("agentinfo-updated", func(t *testing.T) {
 		// Fake: agent will update information when ovsinfo changes.
 		r.updateAgentInfo(event.UpdateEvent{
-			MetaOld:   fakeAgentInfoA.GetObjectMeta(),
 			ObjectOld: fakeAgentInfoA,
-			MetaNew:   fakeAgentInfoB.GetObjectMeta(),
 			ObjectNew: fakeAgentInfoB,
 		}, queue)
 
@@ -230,7 +226,6 @@ func TestProcessAgentInfo(t *testing.T) {
 	t.Run("agentinfo-deleted", func(t *testing.T) {
 		// Fake: agent removed from cluster delete agentinfo.
 		r.deleteAgentInfo(event.DeleteEvent{
-			Meta:   fakeAgentInfoA.GetObjectMeta(),
 			Object: fakeAgentInfoA,
 		}, queue)
 

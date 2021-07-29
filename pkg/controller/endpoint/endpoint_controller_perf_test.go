@@ -105,14 +105,14 @@ func TestEndpointReconcilerPerf(t *testing.T) {
 		if err != nil {
 			t.Fatalf("fail to create agentinfo %s, %s", ai.Name, err)
 		}
-		reconciler.addAgentInfo(event.CreateEvent{Meta: ai.GetObjectMeta(), Object: ai}, queue)
+		reconciler.addAgentInfo(event.CreateEvent{Object: ai}, queue)
 	}
 	for _, ep := range endpoints {
 		err := reconciler.Client.Create(context.Background(), ep)
 		if err != nil {
 			t.Fatalf("fail to create endpoint %s, %s", ep.Name, err)
 		}
-		reconciler.addEndpoint(event.CreateEvent{Meta: ep.GetObjectMeta(), Object: ep}, queue)
+		reconciler.addEndpoint(event.CreateEvent{Object: ep}, queue)
 	}
 
 	err := processQueue(reconciler, queue)

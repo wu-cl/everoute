@@ -63,9 +63,8 @@ type PolicyReconciler struct {
 	groupCache *policycache.GroupCache
 }
 
-func (r *PolicyReconciler) ReconcilePolicy(req ctrl.Request) (ctrl.Result, error) {
+func (r *PolicyReconciler) ReconcilePolicy(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var policy securityv1alpha1.SecurityPolicy
-	var ctx = context.Background()
 
 	r.reconcilerLock.Lock()
 	defer r.reconcilerLock.Unlock()
@@ -99,8 +98,7 @@ func (r *PolicyReconciler) ReconcilePolicy(req ctrl.Request) (ctrl.Result, error
 	return r.processPolicyUpdate(ctx, &policy)
 }
 
-func (r *PolicyReconciler) ReconcilePatch(req ctrl.Request) (ctrl.Result, error) {
-	var ctx = context.Background()
+func (r *PolicyReconciler) ReconcilePatch(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var groupName = req.Name
 	var requeue bool
 
@@ -132,9 +130,8 @@ func (r *PolicyReconciler) ReconcilePatch(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-func (r *PolicyReconciler) ReconcileEndpoint(req ctrl.Request) (ctrl.Result, error) {
+func (r *PolicyReconciler) ReconcileEndpoint(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var endpoint securityv1alpha1.Endpoint
-	var ctx = context.Background()
 	var err error
 
 	r.reconcilerLock.Lock()
@@ -251,12 +248,12 @@ func (r *PolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			r.groupCache.AddGroupMembership(e.Object.(*groupv1alpha1.GroupMembers))
 			// add into queue to process the group patches.
 			q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-				Namespace: e.Meta.GetNamespace(),
-				Name:      e.Meta.GetName(),
+				Namespace: e.Object.GetNamespace(),
+				Name:      e.Object.GetName(),
 			}})
 		},
 		DeleteFunc: func(e event.DeleteEvent, q workqueue.RateLimitingInterface) {
-			r.groupCache.DelGroupMembership(e.Meta.GetName())
+			r.groupCache.DelGroupMembership(e.Object.GetName())
 		},
 	})
 	if err != nil {

@@ -58,8 +58,7 @@ const (
 
 // Reconcile receive endpoint from work queue, synchronize the endpoint status
 // from agentinfo.
-func (r *EndpointReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	klog.V(2).Infof("EndpointReconciler received endpoint %s reconcile", req.NamespacedName)
 
 	endpoint := securityv1alpha1.Endpoint{}
@@ -134,14 +133,14 @@ func (r *EndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *EndpointReconciler) addEndpoint(e event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if e.Meta == nil {
+	if e.Object == nil {
 		klog.Errorf("AddEndpoint received with no metadata event: %v", e)
 		return
 	}
 
 	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-		Namespace: e.Meta.GetNamespace(),
-		Name:      e.Meta.GetName(),
+		Namespace: e.Object.GetNamespace(),
+		Name:      e.Object.GetName(),
 	}})
 }
 

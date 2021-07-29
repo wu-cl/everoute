@@ -178,7 +178,7 @@ func newFakeReconciler(agent *ofnet.OfnetAgent, initObjs ...runtime.Object) *Pol
 func processQueue(r reconcile.Reconciler, q workqueue.RateLimitingInterface) error {
 	for i := 0; i < q.Len(); i++ {
 		request, _ := q.Get()
-		if _, err := r.Reconcile(request.(ctrl.Request)); err != nil {
+		if _, err := r.Reconcile(context.Background(), request.(ctrl.Request)); err != nil {
 			return err
 		}
 		q.Done(request)
@@ -191,7 +191,6 @@ func TestProcessPolicyRule(t *testing.T) {
 	// AddPolicyRule event
 	t.Run("PolicyRule add", func(t *testing.T) {
 		reconciler.addPolicyRule(event.CreateEvent{
-			Meta:   policyRule1.GetObjectMeta(),
 			Object: policyRule1,
 		}, queue)
 
@@ -209,7 +208,6 @@ func TestProcessPolicyRule(t *testing.T) {
 	// UpdatePolicyRule event: delete event && add event
 	t.Run("PolicyRule Del", func(t *testing.T) {
 		reconciler.addPolicyRule(event.CreateEvent{
-			Meta:   policyRule2.GetObjectMeta(),
 			Object: policyRule2,
 		}, queue)
 
@@ -224,7 +222,6 @@ func TestProcessPolicyRule(t *testing.T) {
 		}
 
 		reconciler.deletePolicyRule(event.DeleteEvent{
-			Meta:   policyRule2.GetObjectMeta(),
 			Object: policyRule2,
 		}, queue)
 

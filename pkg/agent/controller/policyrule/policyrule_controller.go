@@ -78,8 +78,7 @@ func (r *PolicyRuleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // +kubebuilder:rbac:groups=networkpolicy.lynx.smartx.com,resources=policyrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networkpolicy.lynx.smartx.com,resources=policyrules/status,verbs=get;update;patch
 
-func (r *PolicyRuleReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	var ctx = context.Background()
+func (r *PolicyRuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var policyRule = networkpolicyv1alpha1.PolicyRule{}
 
 	err := r.Get(ctx, req.NamespacedName, &policyRule)
@@ -105,14 +104,14 @@ func (r *PolicyRuleReconciler) addPolicyRule(e event.CreateEvent, q workqueue.Ra
 		return
 	}
 
-	if e.Meta == nil {
+	if e.Object == nil {
 		klog.Errorf("AddPolicyRule received with no metadata event: %v", e)
 		return
 	}
 
 	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-		Namespace: e.Meta.GetNamespace(),
-		Name:      e.Meta.GetName(),
+		Namespace: e.Object.GetNamespace(),
+		Name:      e.Object.GetName(),
 	}})
 }
 
@@ -123,14 +122,14 @@ func (r *PolicyRuleReconciler) deletePolicyRule(e event.DeleteEvent, q workqueue
 		return
 	}
 
-	if e.Meta == nil {
+	if e.Object == nil {
 		klog.Errorf("AddPolicyRule received with no metadata event: %v", e)
 		return
 	}
 
 	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-		Namespace: e.Meta.GetNamespace(),
-		Name:      e.Meta.GetName(),
+		Namespace: e.Object.GetNamespace(),
+		Name:      e.Object.GetName(),
 	}})
 }
 

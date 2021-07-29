@@ -51,8 +51,7 @@ type GroupReconciler struct {
 
 // Reconcile receive endpointgroup from work queue, first it create groupmemberspatch,
 // then it update groupmembers, latest it clean old groupmemberspatches.
-func (r *GroupReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+func (r *GroupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	klog.V(2).Infof("PatchReconciler received group %s members changes", req.NamespacedName)
 
 	group := groupv1alpha1.EndpointGroup{}
@@ -179,14 +178,14 @@ func (r *GroupReconciler) deleteEndpoint(e event.DeleteEvent, q workqueue.RateLi
 }
 
 func (r *GroupReconciler) addEndpointGroup(e event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if e.Meta == nil {
+	if e.Object == nil {
 		klog.Errorf("AddEndpointGroup received with no metadata event: %v", e)
 		return
 	}
 
 	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-		Namespace: e.Meta.GetNamespace(),
-		Name:      e.Meta.GetName(),
+		Namespace: e.Object.GetNamespace(),
+		Name:      e.Object.GetName(),
 	}})
 }
 
@@ -218,14 +217,14 @@ func (r *GroupReconciler) updateEndpointGroup(e event.UpdateEvent, q workqueue.R
 }
 
 func (r *GroupReconciler) deleteEndpointGroup(e event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	if e.Meta == nil {
+	if e.Object == nil {
 		klog.Errorf("DeleteEndpointGroup received with no metadata event: %v", e)
 		return
 	}
 
 	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
-		Namespace: e.Meta.GetNamespace(),
-		Name:      e.Meta.GetName(),
+		Namespace: e.Object.GetNamespace(),
+		Name:      e.Object.GetName(),
 	}})
 }
 
