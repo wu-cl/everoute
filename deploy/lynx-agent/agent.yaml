@@ -1,4 +1,26 @@
 ---
+apiVersion: v1
+data:
+  agentconfig.yaml: |
+    bridgeName: vlanLearnBridge
+    datapathName: vlanArpLearner
+    localIp: 127.0.0.1
+    rpcPort: 30000
+    ovsControllerPort: 30001
+    uplinkInfo:
+        uplinkPortType: individual
+        uplinkPortName: ens11
+        links:
+        - linkInterfaceName: ens11
+          ofPortNo: 10
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    app: lynx
+  name: lynx-agent-config-md64tc85t9
+  namespace: kube-system
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -34,3 +56,11 @@ spec:
           operator: Exists
         - effect: NoExecute
           operator: Exists
+      volumes:
+        - configMap:
+            name: lynx-agent-config-md64tc85t9
+          name: lynx-agent-config
+      volumeMounts:
+        - name: lynx-agent-config
+          mountPath: /var/lib/lynx/
+          readOnly: true
