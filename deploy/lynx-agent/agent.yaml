@@ -51,7 +51,8 @@ spec:
           command: ["lynx-agent"]
           volumeMounts:
             - name: lynx-agent-config
-              mountPath: /var/lib/lynx/
+              mountPath: /var/lib/lynx/agentconfig.yaml
+              subPath: agentconfig.yaml
             - name: host-openvswitch
               mountPath: /var/run/openvswitch/
       tolerations:
