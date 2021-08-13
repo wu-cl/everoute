@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: lynx-agent
+  namespace: kube-system
+  labels:
+    app: lynx
+    component: lynx-agent
+spec:
+  selector:
+    matchLabels:
+      app: lynx
+      component: lynx-agent
+  template:
+    metadata:
+      labels:
+        app: lynx
+        component: lynx-agent
+    spec:
+      hostNetwork: true
+      serviceAccountName: lynx-agent
+      containers:
+        - name: lynx-agent
+          image: lynx/release
+          imagePullPolicy: IfNotPresent
+          command: ["lynx-agent"]
