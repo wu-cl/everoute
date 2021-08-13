@@ -53,6 +53,8 @@ spec:
             - name: lynx-agent-config
               mountPath: /var/lib/lynx/
               readOnly: true
+            - name: host-openvswitch
+                mountPath: /var/run/openvswitch/
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -64,3 +66,6 @@ spec:
         - configMap:
             name: lynx-agent-config-md64tc85t9
           name: lynx-agent-config
+        - hostPath:
+            path: /var/run/openvswitch
+            name: host-openvswitch
