@@ -49,6 +49,10 @@ spec:
           image: lynx/release
           imagePullPolicy: IfNotPresent
           command: ["lynx-agent"]
+        volumeMounts:
+          - name: lynx-agent-config
+            mountPath: /var/lib/lynx/
+            readOnly: true
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -60,7 +64,3 @@ spec:
         - configMap:
             name: lynx-agent-config-md64tc85t9
           name: lynx-agent-config
-      volumeMounts:
-        - name: lynx-agent-config
-          mountPath: /var/lib/lynx/
-          readOnly: true
