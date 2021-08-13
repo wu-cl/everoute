@@ -54,7 +54,7 @@ spec:
               mountPath: /var/lib/lynx/
               readOnly: true
             - name: host-openvswitch
-                mountPath: /var/run/openvswitch/
+              mountPath: /var/run/openvswitch/
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
