@@ -19,9 +19,18 @@ spec:
         component: lynx-agent
     spec:
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
       serviceAccountName: lynx-agent
       containers:
         - name: lynx-agent
           image: lynx/release
           imagePullPolicy: IfNotPresent
           command: ["lynx-agent"]
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
