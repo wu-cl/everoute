@@ -50,6 +50,8 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["lynx-agent"]
           volumeMounts:
+            - name: lynx-agent
+              mountPath: /var/lib/lynx/
             - name: lynx-agent-config
               mountPath: /var/lib/lynx/agentconfig.yaml
               subPath: agentconfig.yaml
@@ -69,3 +71,6 @@ spec:
         - hostPath:
             path: /var/run/openvswitch
           name: host-openvswitch
+        - hostPath:
+            path: /var/lib/lynx/
+          name: lynx-agent
