@@ -19,8 +19,9 @@ package pod
 import (
 	"context"
 	"fmt"
-	securityv1alpha1 "github.com/smartxworks/lynx/pkg/apis/security/v1alpha1"
+	"github.com/smartxworks/lynx/pkg/apis/security/v1alpha1"
 	lynxctrl "github.com/smartxworks/lynx/pkg/controller"
+	"github.com/smartxworks/lynx/pkg/types"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8stypes "k8s.io/apimachinery/pkg/types"
@@ -46,13 +47,50 @@ func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	klog.V(2).Infof("PodReconciler received endpoint %s reconcile", req.NamespacedName)
 
-	endpoint := securityv1alpha1.Endpoint{}
-	if err := r.Get(ctx, req.NamespacedName, &endpoint); err != nil {
-		klog.Errorf("unable to fetch endpointGroup %s: %s", req.Name, err.Error())
+	pod := v1.Pod{}
+
+	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
+		klog.Errorf("unable to fetch Pod %s: %s", req.Name, err.Error())
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if pod.ObjectMeta.DeletionTimestamp == nil && len(pod.ObjectMeta.Finalizers) == 0 {
+		// new Pod, except host network
+		if pod.Spec.HostNetwork == false {
+			endpoint := v1alpha1.Endpoint{}
+			// use endpoint-pod.name as endpoint name
+			endpoint.Name = "endpoint-" + pod.Name
+			endpoint.Namespace = pod.Namespace
+			endpoint.Status.IPs = append(endpoint.Status.IPs, types.IPAddress(pod.Status.PodIP))
+			endpoint.Spec.VID = 0
+			endpoint.Spec.Reference.ExternalIDName = ""
+			endpoint.Spec.Reference.ExternalIDValue = ""
+
+			// submit creation
+			err := r.Create(ctx, &endpoint)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+	} else if pod.ObjectMeta.DeletionTimestamp != nil {
+		// delete Pod
+		req.NamespacedName.Name = "endpoint-" + req.NamespacedName.Name
+		endpoint := v1alpha1.Endpoint{}
+		err := r.Get(ctx, req.NamespacedName, &endpoint)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.Delete(ctx, &endpoint)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+	} else {
+		// update Pod
 	}
 
 	return ctrl.Result{}, nil
@@ -85,7 +123,7 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *PodReconciler) addPod(e event.CreateEvent, q workqueue.RateLimitingInterface) {
 	if e.Meta == nil {
-		klog.Errorf("AddEndpoint received with no metadata event: %v", e)
+		klog.Errorf("addPod received with no metadata event: %v", e)
 		return
 	}
 
@@ -94,7 +132,6 @@ func (r *PodReconciler) addPod(e event.CreateEvent, q workqueue.RateLimitingInte
 		Name:      e.Meta.GetName(),
 	}})
 }
-
 
 func (r *PodReconciler) deletePod(e event.DeleteEvent, q workqueue.RateLimitingInterface) {
 	if e.Meta == nil {
@@ -107,4 +144,3 @@ func (r *PodReconciler) deletePod(e event.DeleteEvent, q workqueue.RateLimitingI
 		Name:      e.Meta.GetName(),
 	}})
 }
-

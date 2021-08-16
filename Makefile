@@ -3,7 +3,7 @@ APISERVER_BOOT=$(shell which apiserver-boot)
 
 all: codegen manifests bin
 
-bin: controller agent e2e-tools plugins
+bin: controller agent cni e2e-tools plugins
 
 images:
 	docker build -f build/images/release/Dockerfile -t lynx/release .
@@ -13,6 +13,12 @@ controller:
 
 agent:
 	CGO_ENABLED=0 go build -o bin/lynx-agent cmd/lynx-agent/*.go
+
+cni:
+	CGO_ENABLED=0 go build -o bin/lynx-cni cmd/lynx-cni/*.go
+
+cni-pb:
+	protoc -I=. --go_out=plugins=grpc:.  pkg/apis/cni/v1alpha1/cni.proto
 
 e2e-tools:
 	CGO_ENABLED=0 go build -o bin/e2ectl tests/e2e/tools/e2ectl/*.go

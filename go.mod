@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/cenk/hub v1.0.1 // indirect
+	github.com/containernetworking/cni v1.0.0
 	github.com/contiv/libovsdb v0.0.0
 	github.com/contiv/ofnet v0.0.0-00010101000000-000000000000
 	github.com/fatih/color v1.7.0
