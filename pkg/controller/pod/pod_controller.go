@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/smartxworks/lynx/pkg/apis/security/v1alpha1"
 	lynxctrl "github.com/smartxworks/lynx/pkg/controller"
-	"github.com/smartxworks/lynx/pkg/types"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8stypes "k8s.io/apimachinery/pkg/types"
@@ -62,12 +61,12 @@ func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if pod.Spec.HostNetwork == false {
 			endpoint := v1alpha1.Endpoint{}
 			// use endpoint-pod.name as endpoint name
-			endpoint.Name = "endpoint-" + pod.Name
-			endpoint.Namespace = pod.Namespace
-			endpoint.Status.IPs = append(endpoint.Status.IPs, types.IPAddress(pod.Status.PodIP))
+			endpoint.Name = "endpoint-" + pod.Namespace + "-" + pod.Name
+			// endpoint.Namespace = pod.Namespace
+			// endpoint.Status.IPs = append(endpoint.Status.IPs, types.IPAddress(pod.Status.PodIP))
 			endpoint.Spec.VID = 0
-			endpoint.Spec.Reference.ExternalIDName = ""
-			endpoint.Spec.Reference.ExternalIDValue = ""
+			endpoint.Spec.Reference.ExternalIDName = "pod-uuid"
+			endpoint.Spec.Reference.ExternalIDValue = endpoint.Name
 
 			// submit creation
 			err := r.Create(ctx, &endpoint)
@@ -78,7 +77,7 @@ func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	} else if pod.ObjectMeta.DeletionTimestamp != nil {
 		// delete Pod
-		req.NamespacedName.Name = "endpoint-" + req.NamespacedName.Name
+		req.NamespacedName.Name = "endpoint-" + string(pod.UID)
 		endpoint := v1alpha1.Endpoint{}
 		err := r.Get(ctx, req.NamespacedName, &endpoint)
 		if err != nil {

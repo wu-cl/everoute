@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	cniserver "github.com/smartxworks/lynx/pkg/agent/cniserver"
 	"net"
 	"time"
 
@@ -107,6 +108,11 @@ func main() {
 		},
 	})
 	go agentmonitor.Run(stopChan)
+
+	// cni server
+	cniServer := cniserver.CNIServer{}
+	cniServer.Initialize(k8sClient)
+	go cniServer.Run(stopChan)
 
 	<-stopChan
 }
