@@ -64,6 +64,14 @@ spec:
           operator: Exists
         - effect: NoExecute
           operator: Exists
+      initContainers:
+        - command:
+            - install_cni
+          image: lynx/release
+          name: install-cni
+          volumeMounts:
+            - name: lynx-agent
+              mountPath: /var/lib/lynx/
       volumes:
         - configMap:
             name: lynx-agent-config-md64tc85t9

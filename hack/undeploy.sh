@@ -35,6 +35,3 @@ kubectl delete -f ${lynxcontroller_deploypath}
 
 ### remove lynx-agent
 kubectl delete -f ${lynxagent_deploypath}
-
-### clean config file
-rm -rf /var/lib/lynx
