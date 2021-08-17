@@ -11,7 +11,7 @@ RUN go mod download
 COPY . $GOPATH/src/lynx
 RUN mkdir -p /opt/lynx/bin && \
     make bin && \
-    cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/ &&\
+    cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/ && \
     cp $GOPATH/src/lynx/build/script/* /opt/lynx/bin/
 
 FROM alpine
