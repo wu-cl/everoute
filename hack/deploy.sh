@@ -65,7 +65,7 @@ kubectl apply -f ${temp_dir}/lynx-controller
 
 ### create lynx-agent
 cp -r ${lynxagent_deploypath} ${temp_dir}
-sed -i "s/lynx\/release/lynx\/release$(image_version)/g" ${temp_dir}/lynx-agent/agent.yaml
+sed -i "s/lynx\/release/lynx\/release${image_version}/g" ${temp_dir}/lynx-agent/agent.yaml
 kubectl apply -f ${temp_dir}/lynx-agent
 
 ### wait for pods setup
