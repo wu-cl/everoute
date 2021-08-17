@@ -1,6 +1,7 @@
 package cniserver
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	cnipb "github.com/smartxworks/lynx/pkg/apis/cni/v1alpha1"
@@ -19,6 +20,8 @@ type CNIServer struct {
 }
 
 func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
+	klog.Info("Enter cmdadd")
+	klog.Info(request)
 	/*
 		// create veth pair
 		la := netlink.NewLinkAttrs()
@@ -47,13 +50,17 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 	}
 	portExternalIDValue := "endpoint-" + portInfo["K8S_POD_NAMESPACE"] + "-" + portInfo["K8S_POD_NAME"]
 
+
+
 	addCmd := fmt.Sprintf(`
 		set -o errexit
-		set -o pipefail
 		set -o nounset
 		set -o xtrace
 
-		netns=%s
+		netnsPath=%s
+		netns=$(echo ${netnsPath} | awk -F '/' '{print $3}')
+		mkdir -p /var/run/netns
+		ln -s /host${netnsPath} /var/run/netns/${netns}
 		bridgeName=%s
 		ipAddr=%s
 		ifName=%s
@@ -74,14 +81,24 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		ip netns exec ${netns} ip a add ${ipAddr} dev ${ifName}
 
 		attached_mac=$(ip netns exec ${netns} cat /sys/class/net/${ifName}/address)
-		ovs-vsctl add-port ${bridgeName} ${portName} tag=${vlanTag} \
+		ovs-vsctl add-port ${bridgeName} ${portName} \
 			-- set interface ${portName} external_ids=${portExternalIDName}=${portExternalIDValue} \
 			-- set interface ${portName} external_ids:attached-mac="${attached_mac}"
+
+		rm  /var/run/netns/${netns}
 		
-	`, request.Netns, "vlanLearnBridge", "10.0.0.1", request.Args, portExternalIDValue)
+	`, request.Netns, "vlanLearnBridge", "10.0.0.1", request.Ifname, portExternalIDValue)
 
-	err := exec.Command("/bin/bash", "-c", addCmd).Run()
+	cmd := exec.Command("/bin/sh", "-c", addCmd)
 
+	var out bytes.Buffer
+	var outErr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &outErr
+	err := cmd.Run()
+
+	klog.Info("cmd out:", out.String())
+	klog.Info("cmd err:", outErr.String())
 
 	return nil, err
 }

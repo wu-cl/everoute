@@ -55,6 +55,8 @@ spec:
           image: lynx/release
           imagePullPolicy: IfNotPresent
           command: ["lynx-agent"]
+          securityContext:
+            privileged: true
           volumeMounts:
             - name: lynx-agent
               mountPath: /var/lib/lynx/
@@ -63,6 +65,8 @@ spec:
               subPath: agentconfig.yaml
             - name: host-openvswitch
               mountPath: /var/run/openvswitch/
+            - name: host-proc
+              mountPath: /host/proc/
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -74,6 +78,8 @@ spec:
         - command: ["install_cni"]
           image: lynx/release
           name: install-cni
+          securityContext:
+            privileged: true
           volumeMounts:
             - name: lynx-agent
               mountPath: /var/lib/lynx/
@@ -84,6 +90,8 @@ spec:
             - name: lynx-config
               mountPath: /var/lib/lynx/cni-conf.conf
               subPath: cni-conf.conf
+            - name: host-openvswitch
+              mountPath: /var/run/openvswitch/
       volumes:
         - configMap:
             name: lynx-config-xu73od84d3
@@ -100,3 +108,6 @@ spec:
         - hostPath:
             path: /etc/cni/net.d
           name: cni-conf
+        - hostPath:
+            path: /proc
+          name: host-proc

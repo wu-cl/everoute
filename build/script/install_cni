@@ -5,3 +5,10 @@ rm -rf /var/lib/lynx/cni.sock
 install -m 755 /opt/lynx/bin/lynx-cni /opt/cni/bin/lynx
 
 install -m 644 /var/lib/lynx/cni-conf.conf /etc/cni/net.d/10-lynx.conf
+
+GW_IFACE="gw0"
+DEFAULT_BRIDGE="vlanLearnBridge"
+ovs-vsctl del-br ${DEFAULT_BRIDGE}
+ovs-vsctl add-br ${DEFAULT_BRIDGE} -- set bridge ${DEFAULT_BRIDGE} protocols=OpenFlow10,OpenFlow11,OpenFlow12,OpenFlow13 fail_mode=secure
+ovs-vsctl add-port ${DEFAULT_BRIDGE} ${GW_IFACE} -- set Interface ${GW_IFACE} type=internal -- set Interface ${GW_IFACE} ofport=10
+ip link set gw0 up
