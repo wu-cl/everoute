@@ -21,7 +21,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  annotations: { }
+  annotations: {}
   labels:
     app: lynx
   name: lynx-config-xu73od84d3
@@ -54,7 +54,7 @@ spec:
         - name: lynx-agent
           image: lynx/release
           imagePullPolicy: IfNotPresent
-          command: [ "lynx-agent" ]
+          command: ["lynx-agent"]
           volumeMounts:
             - name: lynx-agent
               mountPath: /var/lib/lynx/
@@ -71,7 +71,7 @@ spec:
         - effect: NoExecute
           operator: Exists
       initContainers:
-        - command: [ "install_cni" ]
+        - command: ["install_cni"]
           image: lynx/release
           name: install-cni
           volumeMounts:
@@ -80,7 +80,7 @@ spec:
             - name: cni-bin
               mountPath: /opt/cni/bin/
             - name: cni-conf
-                mountPath: /etc/cni/net.d
+              mountPath: /etc/cni/net.d
             - name: lynx-config
               mountPath: /var/lib/lynx/cni-conf.conf
               subPath: cni-conf.conf
