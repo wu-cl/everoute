@@ -9,10 +9,12 @@ RUN go mod download
 
 # Build
 COPY . $GOPATH/src/lynx
-RUN mkdir -p /opt/lynx/bin && \
-    make bin && \
-    cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/ && \
-    cp $GOPATH/src/lynx/build/script/* /opt/lynx/bin/
+RUN mkdir -p /opt/lynx/bin
+RUN make controller
+RUN make agent
+RUN make cni
+RUN cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/
+RUN cp $GOPATH/src/lynx/build/script/* /opt/lynx/bin/
 
 FROM alpine
 
