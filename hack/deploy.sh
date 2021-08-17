@@ -38,6 +38,7 @@ temp_dir=$(mktemp -d)
 local_path=$(dirname "$(readlink -f ${0})")
 crds_path=${local_path}/../deploy/crds
 lynxcontroller_deploypath=${local_path}/../deploy/lynx-controller
+lynxagent_deploypath=${local_path}/../deploy/lynx-agent
 
 echo "gen lynx controller tls certs"
 (
@@ -53,10 +54,19 @@ kubectl apply -f ${crds_path}
 ### create secret for validate-webhook
 kubectl create secret tls -n kube-system lynx-controller-tls --cert ${temp_dir}/tls.crt --key ${temp_dir}/tls.key
 
+### set image version
+image_version="v0.0.1"
+
 ### create lynx-controller
 cp -r ${lynxcontroller_deploypath} ${temp_dir}
 sed -i "s/caBundle: Cg==/caBundle: $(base64 -w0 < ${temp_dir}/ca.crt)/g" ${temp_dir}/lynx-controller/webhook.yaml
+sed -i "s/lynx\/release/lynx\/release$(image_version)/g" ${temp_dir}/lynx-controller/controller.yaml
 kubectl apply -f ${temp_dir}/lynx-controller
+
+### create lynx-agent
+cp -r ${lynxagent_deploypath} ${temp_dir}
+sed -i "s/lynx\/release/lynx\/release$(image_version)/g" ${temp_dir}/lynx-agent/agent.yaml
+kubectl apply -f ${temp_dir}/lynx-agent
 
 ### wait for pods setup
 wait_for_up lynx-controller
