@@ -19,6 +19,7 @@ set -o nounset
 local_path=$(dirname "$(readlink -f ${0})")
 crds_path=${local_path}/../deploy/crds
 lynxcontroller_deploypath=${local_path}/../deploy/lynx-controller
+lynxagent_deploypath=${local_path}/../deploy/lynx-agent
 
 ## remove all resources
 kubectl get -f deploy/crds/ | awk 'NR != 1 {print $1}' | xargs -l kubectl delete --all
@@ -31,3 +32,6 @@ kubectl delete secret -n kube-system lynx-controller-tls
 
 ### remove lynx-controller
 kubectl delete -f ${lynxcontroller_deploypath}
+
+### remove lynx-agent
+kubectl delete -f ${lynxagent_deploypath}
