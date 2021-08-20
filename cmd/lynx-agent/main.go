@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	cniserver "github.com/smartxworks/lynx/pkg/agent/cniserver"
+	corev1 "k8s.io/api/core/v1"
 	"net"
 	"time"
 
@@ -42,6 +43,7 @@ var (
 func init() {
 	_ = networkpolicyv1alpha1.AddToScheme(scheme)
 	_ = agentv1alpha1.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
 }
 
 func main() {

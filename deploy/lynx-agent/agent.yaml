@@ -67,6 +67,8 @@ spec:
               mountPath: /var/run/openvswitch/
             - name: host-proc
               mountPath: /host/proc/
+            - name: cni-bin
+              mountPath: /opt/cni/bin/
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists

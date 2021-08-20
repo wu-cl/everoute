@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/cenk/hub v1.0.1 // indirect
 	github.com/containernetworking/cni v1.0.0
+	github.com/containernetworking/plugins v1.0.0
 	github.com/contiv/libovsdb v0.0.0
 	github.com/contiv/ofnet v0.0.0-00010101000000-000000000000
 	github.com/fatih/color v1.7.0
@@ -13,24 +14,15 @@ require (
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/spec v0.19.3
 	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
-	github.com/google/uuid v1.2.0 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/go-retryablehttp v0.7.0
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/j-keck/arping v1.0.2
-	github.com/kr/pretty v0.2.1 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
-	github.com/pelletier/go-toml v1.8.1 // indirect
-	github.com/prometheus/client_golang v1.7.1 // indirect
-	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/vektah/gqlparser/v2 v2.1.0
-	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
-	google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a // indirect
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v2 v2.4.0

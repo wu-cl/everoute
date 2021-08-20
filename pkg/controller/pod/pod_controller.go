@@ -44,7 +44,7 @@ type PodReconciler struct {
 // from agentinfo.
 func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	klog.V(2).Infof("PodReconciler received endpoint %s reconcile", req.NamespacedName)
+	klog.Infof("PodReconciler received endpoint %s reconcile", req.NamespacedName)
 
 	pod := v1.Pod{}
 
@@ -71,6 +71,7 @@ func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			// submit creation
 			err := r.Create(ctx, &endpoint)
 			if err != nil {
+				klog.Errorf("create endpoint err: %s", err)
 				return ctrl.Result{}, err
 			}
 		}
