@@ -55,7 +55,7 @@ kubectl apply -f ${crds_path}
 kubectl create secret tls -n kube-system lynx-controller-tls --cert ${temp_dir}/tls.crt --key ${temp_dir}/tls.key
 
 ### set image version
-image_version="v0.0.46"
+image_version="v0.0.56"
 
 ### create lynx-controller
 cp -r ${lynxcontroller_deploypath} ${temp_dir}

@@ -11,18 +11,20 @@ import (
 	"github.com/containernetworking/plugins/plugins/ipam/host-local/backend/allocator"
 	cnipb "github.com/smartxworks/lynx/pkg/apis/cni/v1alpha1"
 	"google.golang.org/grpc"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 	"net"
 	"os"
 	"os/exec"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 const CNISocketAddr = "/var/lib/lynx/cni.sock"
 
 type CNIServer struct {
 	k8sClient client.Client
+	podCIDR   []types.IPNet
 }
 
 type CNIArgs struct {
@@ -63,24 +65,13 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 
 	portExternalIDValue := "endpoint-" + args.K8S_POD_NAMESPACE + "-" + args.K8S_POD_NAME
 
-	// get node CIDR
-	nodeName, _ := os.Hostname()
-	node := v1.Node{}
-	key := client.ObjectKey{
-		Name: nodeName,
-	}
-	err = s.k8sClient.Get(ctx, key, &node)
-	klog.Error(err)
-	klog.Infof("node info:%s", node)
-	klog.Infof("node PodCIDRs:%s", node.Spec.PodCIDRs)
-	_, cidrs, err := net.ParseCIDR(node.Spec.PodCIDRs[0])
 	klog.Error(err)
 	ipip := allocator.Net{
 		Name:       conf.Name,
 		CNIVersion: conf.CNIVersion,
 		IPAM: &allocator.IPAMConfig{
 			Type:    "host-local",
-			Ranges:  []allocator.RangeSet{append(allocator.RangeSet{}, allocator.Range{Subnet: types.IPNet(*cidrs)})},
+			Ranges:  []allocator.RangeSet{append(allocator.RangeSet{}, allocator.Range{Subnet: s.podCIDR[0]})},
 			DataDir: "/tmp/cni-example",
 		},
 		Args: nil,
@@ -180,6 +171,51 @@ func (s *CNIServer) Initialize(k8sClient client.Client) {
 	s.k8sClient = k8sClient
 
 	// TODO: sync all endpoints info
+
+	// get node CIDR
+	nodeName, _ := os.Hostname()
+	nodeName = strings.ToLower(nodeName)
+	node := corev1.Node{}
+	key := client.ObjectKey{
+		Name: nodeName,
+	}
+	err := s.k8sClient.Get(context.Background(), key, &node)
+	klog.Error(err)
+	klog.Infof("node PodCIDRs:%s", node.Spec.PodCIDRs)
+	for _, cidrString := range node.Spec.PodCIDRs {
+		cidr, _ := types.ParseCIDR(cidrString)
+		s.podCIDR = append(s.podCIDR, types.IPNet(*cidr))
+	}
+
+	// set gateway ip address
+	gwIP := make([]byte, 4)
+	copy(gwIP, s.podCIDR[0].IP.To4())
+	gwIP[3] = gwIP[3] + 1
+
+	gw := net.IPNet{
+		IP:   gwIP,
+		Mask: s.podCIDR[0].Mask,
+	}
+	klog.Info(gw.String())
+	cmd := fmt.Sprintf(`
+		set -o errexit
+		set -o nounset
+		set -o xtrace
+
+		ip a add %s dev gw0
+	`, gw.String())
+
+	result := exec.Command("/bin/sh", "-c", cmd)
+
+	var out bytes.Buffer
+	var outErr bytes.Buffer
+	result.Stdout = &out
+	result.Stderr = &outErr
+	err = result.Run()
+
+	klog.Info("cmd out:", out.String())
+	klog.Info("cmd err:", outErr.String())
+
 }
 
 func (s *CNIServer) Run(stopChan <-chan struct{}) {

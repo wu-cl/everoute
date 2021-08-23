@@ -17,7 +17,15 @@ data:
     {
         "cniVersion": "0.3.0",
         "name": "lynx",
-        "type": "lynx"
+        "plugins": [
+            {
+                "type": "lynx"
+            },
+            {
+                "type": "portmap",
+                "capabilities": {"portMappings": true}
+            }
+        ]
     }
 kind: ConfigMap
 metadata:
