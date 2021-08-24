@@ -18,7 +18,7 @@ RUN make cni
 RUN cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/
 
 #FROM alpine
-FROM ubuntu
+FROM ubuntu:20.04
 
 #RUN apk update && apk add openvswitch
 RUN apt update && apt install -y openvswitch-switch && apt install -y iproute2

@@ -100,11 +100,12 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		ipAddr=%s
 		ifName=%s
 
+		portExternalIDName="pod-uuid"
+		portExternalIDValue=%s
+
 		vethName="veth-${netns}"
 		portName=${vethName}
 		vethPeerName="vethpeer-${netns}"
-		portExternalIDName="pod-uuid"
-		portExternalIDValue=%s
 		
 		gateway=%s
 
@@ -164,7 +165,61 @@ func (s *CNIServer) CmdCheck(ctx context.Context, request *cnipb.CniRequest) (*c
 }
 
 func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
-	return nil, nil
+	klog.Info(request)
+	conf := types.NetConf{}
+
+	// delete ovs port
+	addCmd := fmt.Sprintf(`
+		set -o errexit
+		set -o nounset
+		set -o xtrace
+
+		netnsPath=%s
+		netns=$(echo ${netnsPath} | awk -F '/' '{print $3}')
+
+		ovs-vsctl del-port %s veth-{netns}
+		`, request.Netns, "vlanLearnBridge")
+
+	cmd := exec.Command("/bin/sh", "-c", addCmd)
+
+	var out bytes.Buffer
+	var outErr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &outErr
+	err := cmd.Run()
+
+	klog.Info("cmd out:", out.String())
+	klog.Info("cmd err:", outErr.String())
+
+	// release allocated IP
+	ipip := allocator.Net{
+		Name:       conf.Name,
+		CNIVersion: conf.CNIVersion,
+		IPAM: &allocator.IPAMConfig{
+			Type:    "host-local",
+			Ranges:  []allocator.RangeSet{append(allocator.RangeSet{}, allocator.Range{Subnet: s.podCIDR[0]})},
+			DataDir: "/tmp/cni-example",
+		},
+		Args: nil,
+	}
+	os.Setenv("CNI_PATH", request.Path)
+	os.Setenv("CNI_CONTAINERID", request.ContainerId)
+	os.Setenv("CNI_NETNS", request.Netns)
+	os.Setenv("CNI_IFNAME", request.Ifname)
+	ipipByte, _ := json.Marshal(ipip)
+	err = ipam.ExecDel("host-local", ipipByte)
+	klog.Error(err)
+
+	resp := types100.Result{
+		CNIVersion: conf.CNIVersion,
+	}
+	var resultBytes bytes.Buffer
+	err = resp.PrintTo(&resultBytes)
+	klog.Error(err)
+	return &cnipb.CniResponse{
+		Result: resultBytes.Bytes(),
+		Error:  nil,
+	}, err
 }
 
 func (s *CNIServer) Initialize(k8sClient client.Client) {
@@ -173,6 +228,7 @@ func (s *CNIServer) Initialize(k8sClient client.Client) {
 	// TODO: sync all endpoints info
 
 	// get node CIDR
+	// TODO: hostname cannot be modified after joining into cluster
 	nodeName, _ := os.Hostname()
 	nodeName = strings.ToLower(nodeName)
 	node := corev1.Node{}

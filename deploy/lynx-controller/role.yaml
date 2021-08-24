@@ -55,6 +55,7 @@ rules:
   verbs:
   - patch
   - update
+  - delete
   - get
   - list
   - watch

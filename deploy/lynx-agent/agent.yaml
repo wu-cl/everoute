@@ -17,15 +17,7 @@ data:
     {
         "cniVersion": "0.3.0",
         "name": "lynx",
-        "plugins": [
-            {
-                "type": "lynx"
-            },
-            {
-                "type": "portmap",
-                "capabilities": {"portMappings": true}
-            }
-        ]
+        "type": "lynx"
     }
 kind: ConfigMap
 metadata:
@@ -60,8 +52,8 @@ spec:
       serviceAccountName: lynx-agent
       containers:
         - name: lynx-agent
-          image: lynx/release
-          imagePullPolicy: IfNotPresent
+          image: lynx/dev:latest
+          #imagePullPolicy: IfNotPresent
           command: ["lynx-agent"]
           securityContext:
             privileged: true
@@ -86,7 +78,7 @@ spec:
           operator: Exists
       initContainers:
         - command: ["install_cni"]
-          image: lynx/release
+          image: lynx/dev:latest
           name: install-cni
           securityContext:
             privileged: true

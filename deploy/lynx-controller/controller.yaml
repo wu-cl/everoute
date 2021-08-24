@@ -31,8 +31,8 @@ spec:
       serviceAccountName: lynx-controller
       containers:
         - name: lynx-controller
-          image: lynx/release
-          imagePullPolicy: IfNotPresent
+          image: lynx/dev:latest
+          #imagePullPolicy: IfNotPresent
           command: ["lynx-controller"]
           args:
             - --enable-leader-election=true

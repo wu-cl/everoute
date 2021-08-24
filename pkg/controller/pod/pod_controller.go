@@ -23,7 +23,7 @@ import (
 	lynxctrl "github.com/smartxworks/lynx/pkg/controller"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8stypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -44,53 +44,47 @@ type PodReconciler struct {
 // from agentinfo.
 func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	klog.Infof("PodReconciler received endpoint %s reconcile", req.NamespacedName)
+	klog.Infof("PodReconciler received pod %s reconcile", req.NamespacedName)
 
 	pod := v1.Pod{}
 
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
-		klog.Errorf("unable to fetch Pod %s: %s", req.Name, err.Error())
-		// we'll ignore not-found errors, since they can't be fixed by an immediate
-		// requeue (we'll need to wait for a new notification), and we can get them
-		// on deleted requests.
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+
+		klog.Infof("Enter pod delete")
+		endpointReq := types.NamespacedName{
+			Name: "endpoint-" + req.Namespace + "-" + req.Name,
+		}
+
+		klog.Info(endpointReq)
+		endpoint := v1alpha1.Endpoint{}
+		if err := r.Get(ctx, endpointReq, &endpoint); err != nil {
+			return ctrl.Result{}, client.IgnoreNotFound(err)
+		}
+		if err = r.Delete(ctx, &endpoint); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		return ctrl.Result{}, nil
 	}
 
-	if pod.ObjectMeta.DeletionTimestamp == nil && len(pod.ObjectMeta.Finalizers) == 0 {
-		// new Pod, except host network
-		if pod.Spec.HostNetwork == false {
-			endpoint := v1alpha1.Endpoint{}
-			// use endpoint-pod.name as endpoint name
-			endpoint.Name = "endpoint-" + pod.Namespace + "-" + pod.Name
-			// endpoint.Namespace = pod.Namespace
-			// endpoint.Status.IPs = append(endpoint.Status.IPs, types.IPAddress(pod.Status.PodIP))
-			endpoint.Spec.VID = 0
-			endpoint.Spec.Reference.ExternalIDName = "pod-uuid"
-			endpoint.Spec.Reference.ExternalIDValue = endpoint.Name
+	// except host network
+	if pod.Spec.HostNetwork == true {
+		return ctrl.Result{}, nil
+	}
 
-			// submit creation
-			err := r.Create(ctx, &endpoint)
-			if err != nil {
-				klog.Errorf("create endpoint err: %s", err)
-				return ctrl.Result{}, err
-			}
-		}
+	klog.Infof("Enter pod add")
+	endpoint := v1alpha1.Endpoint{}
+	// TODO: namespace-name may collide
+	endpoint.Name = "endpoint-" + pod.Namespace + "-" + pod.Name
+	endpoint.Spec.VID = 0
+	endpoint.Spec.Reference.ExternalIDName = "pod-uuid"
+	endpoint.Spec.Reference.ExternalIDValue = endpoint.Name
 
-	} else if pod.ObjectMeta.DeletionTimestamp != nil {
-		// delete Pod
-		req.NamespacedName.Name = "endpoint-" + string(pod.UID)
-		endpoint := v1alpha1.Endpoint{}
-		err := r.Get(ctx, req.NamespacedName, &endpoint)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		err = r.Delete(ctx, &endpoint)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-	} else {
-		// update Pod
+	// submit creation
+	err := r.Create(ctx, &endpoint)
+	if err != nil {
+		klog.Errorf("create endpoint err: %s", err)
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -112,7 +106,7 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	err = c.Watch(&source.Kind{Type: &v1.Pod{}}, &handler.Funcs{
 		CreateFunc: r.addPod,
-		DeleteFunc: r.deletePod,
+		DeleteFunc: r.delPod,
 	})
 	if err != nil {
 		return err
@@ -122,24 +116,22 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *PodReconciler) addPod(e event.CreateEvent, q workqueue.RateLimitingInterface) {
-	if e.Meta == nil {
-		klog.Errorf("addPod received with no metadata event: %v", e)
+	if e.Object == nil {
+		klog.Errorf("receive create event with no object %v", e)
 		return
 	}
-
-	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
+	q.Add(ctrl.Request{NamespacedName: types.NamespacedName{
 		Namespace: e.Meta.GetNamespace(),
 		Name:      e.Meta.GetName(),
 	}})
 }
 
-func (r *PodReconciler) deletePod(e event.DeleteEvent, q workqueue.RateLimitingInterface) {
-	if e.Meta == nil {
-		klog.Errorf("AddEndpoint received with no metadata event: %v", e)
+func (r *PodReconciler) delPod(e event.DeleteEvent, q workqueue.RateLimitingInterface) {
+	if e.Object == nil {
+		klog.Errorf("receive delete event with no object %v", e)
 		return
 	}
-
-	q.Add(ctrl.Request{NamespacedName: k8stypes.NamespacedName{
+	q.Add(ctrl.Request{NamespacedName: types.NamespacedName{
 		Namespace: e.Meta.GetNamespace(),
 		Name:      e.Meta.GetName(),
 	}})

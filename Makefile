@@ -6,7 +6,7 @@ all: codegen manifests bin
 bin: controller agent cni e2e-tools plugins
 
 images:
-	docker build -f build/images/release/Dockerfile -t lynx/release .
+	docker build -f build/images/release/Dockerfile -t lynx/dev .
 
 controller:
 	CGO_ENABLED=0 go build -o bin/lynx-controller cmd/lynx-controller/main.go
