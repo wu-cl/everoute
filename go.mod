@@ -9,6 +9,7 @@ require (
 	github.com/containernetworking/plugins v1.0.0
 	github.com/contiv/libovsdb v0.0.0
 	github.com/contiv/ofnet v0.0.0-00010101000000-000000000000
+	github.com/coreos/go-iptables v0.6.0
 	github.com/fatih/color v1.7.0
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/go-logr/logr v0.4.0 // indirect
@@ -21,6 +22,7 @@ require (
 	github.com/onsi/gomega v1.15.0
 	github.com/spf13/cobra v1.1.1
 	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
 	google.golang.org/grpc v1.35.0

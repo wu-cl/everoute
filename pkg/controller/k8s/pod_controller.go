@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pod
+package k8s
 
 import (
 	"context"
 	"fmt"
 	"github.com/smartxworks/lynx/pkg/apis/security/v1alpha1"
 	lynxctrl "github.com/smartxworks/lynx/pkg/controller"
+	"github.com/smartxworks/lynx/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,26 +42,25 @@ type PodReconciler struct {
 }
 
 // Reconcile receive endpoint from work queue, synchronize the endpoint status
-// from agentinfo.
 func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	klog.Infof("PodReconciler received pod %s reconcile", req.NamespacedName)
 
 	pod := v1.Pod{}
+	endpointName := "pod-" + utils.EncodeNamespacedName(req.NamespacedName)
 
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
-
-		klog.Infof("Enter pod delete")
+		klog.Infof("Delete endpoint %s", endpointName)
 		endpointReq := types.NamespacedName{
-			Name: "endpoint-" + req.Namespace + "-" + req.Name,
+			Name: endpointName,
 		}
-
-		klog.Info(endpointReq)
 		endpoint := v1alpha1.Endpoint{}
-		if err := r.Get(ctx, endpointReq, &endpoint); err != nil {
+		if err = r.Get(ctx, endpointReq, &endpoint); err != nil {
+			klog.Infof("Endpoint %s does not exist", endpointName)
 			return ctrl.Result{}, client.IgnoreNotFound(err)
 		}
 		if err = r.Delete(ctx, &endpoint); err != nil {
+			klog.Errorf("Delete Endpoint %s failed, err: %s", endpointName, err)
 			return ctrl.Result{}, err
 		}
 
@@ -72,18 +72,16 @@ func (r *PodReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	klog.Infof("Enter pod add")
 	endpoint := v1alpha1.Endpoint{}
-	// TODO: namespace-name may collide
-	endpoint.Name = "endpoint-" + pod.Namespace + "-" + pod.Name
+	endpoint.Name = endpointName
 	endpoint.Spec.VID = 0
 	endpoint.Spec.Reference.ExternalIDName = "pod-uuid"
-	endpoint.Spec.Reference.ExternalIDValue = endpoint.Name
+	endpoint.Spec.Reference.ExternalIDValue = endpointName
 
 	// submit creation
 	err := r.Create(ctx, &endpoint)
 	if err != nil {
-		klog.Errorf("create endpoint err: %s", err)
+		klog.Errorf("create endpoint %s err: %s", endpointName, err)
 		return ctrl.Result{}, err
 	}
 

@@ -7,9 +7,9 @@ WORKDIR $GOPATH/src/lynx
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . $GOPATH/src/lynx
 RUN mkdir -p /opt/lynx/bin
-RUN cp $GOPATH/src/lynx/build/script/* /opt/lynx/bin/
+COPY ./build/script/* /opt/lynx/bin/
+COPY . $GOPATH/src/lynx
 
 # Build
 RUN make controller
@@ -21,7 +21,8 @@ RUN cp $GOPATH/src/lynx/bin/* /opt/lynx/bin/
 FROM ubuntu:20.04
 
 #RUN apk update && apk add openvswitch
-RUN apt update && apt install -y openvswitch-switch && apt install -y iproute2
+RUN apt update && apt install -y openvswitch-switch iproute2 iptables
+RUN apt clean
 
 COPY --from=builder /opt/lynx/bin/* /opt/lynx/bin/
 

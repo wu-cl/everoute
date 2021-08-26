@@ -19,7 +19,7 @@ package model
 import "context"
 
 // Endpoint is a network communication entity. It's provided by the endpoint provider,
-// it could be a virtual machine, a pod, an ovs port or other entities.
+// it could be a virtual machine, a k8s, an ovs port or other entities.
 type Endpoint struct {
 	// Name is the unique identity of endpoint
 	Name string

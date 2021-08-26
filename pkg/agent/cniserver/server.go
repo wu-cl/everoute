@@ -10,8 +10,10 @@ import (
 	"github.com/containernetworking/plugins/pkg/ipam"
 	"github.com/containernetworking/plugins/plugins/ipam/host-local/backend/allocator"
 	cnipb "github.com/smartxworks/lynx/pkg/apis/cni/v1alpha1"
+	"github.com/smartxworks/lynx/pkg/utils"
 	"google.golang.org/grpc"
 	corev1 "k8s.io/api/core/v1"
+	coretypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog"
 	"net"
 	"os"
@@ -60,12 +62,20 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 	args := &CNIArgs{}
 	err := types.LoadArgs(request.Args, args)
 	if err != nil {
+		klog.Error(err)
 		return nil, err
 	}
 
-	portExternalIDValue := "endpoint-" + args.K8S_POD_NAMESPACE + "-" + args.K8S_POD_NAME
+	podNamespacedName := coretypes.NamespacedName{
+		Name:      string(args.K8S_POD_NAME),
+		Namespace: string(args.K8S_POD_NAMESPACE),
+	}
+	pod := corev1.Pod{}
+	if err = s.k8sClient.Get(context.Background(), podNamespacedName, &pod); err != nil {
+		klog.Error(err)
+		return nil, err
+	}
 
-	klog.Error(err)
 	ipip := allocator.Net{
 		Name:       conf.Name,
 		CNIVersion: conf.CNIVersion,
@@ -87,6 +97,8 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 	klog.Error(err)
 	klog.Infof("ipamResult:%s", ipamResult)
 
+	portExternalIDValue := "pod-" + utils.EncodeNamespacedName(podNamespacedName)
+
 	addCmd := fmt.Sprintf(`
 		set -o errexit
 		set -o nounset
@@ -100,7 +112,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		ipAddr=%s
 		ifName=%s
 
-		portExternalIDName="pod-uuid"
+		portExternalIDName="k8s-uuid"
 		portExternalIDValue=%s
 
 		vethName="veth-${netns}"
@@ -167,7 +179,8 @@ func (s *CNIServer) CmdCheck(ctx context.Context, request *cnipb.CniRequest) (*c
 func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
 	klog.Info(request)
 	conf := types.NetConf{}
-
+	json.Unmarshal(request.Stdin, &conf)
+	klog.Info(conf)
 	// delete ovs port
 	addCmd := fmt.Sprintf(`
 		set -o errexit
@@ -177,7 +190,7 @@ func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cni
 		netnsPath=%s
 		netns=$(echo ${netnsPath} | awk -F '/' '{print $3}')
 
-		ovs-vsctl del-port %s veth-{netns}
+		ovs-vsctl del-port %s veth-${netns}
 		`, request.Netns, "vlanLearnBridge")
 
 	cmd := exec.Command("/bin/sh", "-c", addCmd)
@@ -202,6 +215,8 @@ func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cni
 		},
 		Args: nil,
 	}
+
+	// TODO: muilt requests?
 	os.Setenv("CNI_PATH", request.Path)
 	os.Setenv("CNI_CONTAINERID", request.ContainerId)
 	os.Setenv("CNI_NETNS", request.Netns)

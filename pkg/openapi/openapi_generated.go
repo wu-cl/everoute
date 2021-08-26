@@ -1999,13 +1999,13 @@ func schema_k8sio_api_apps_v1_DaemonSetSpec(ref common.ReferenceCallback) common
 				Properties: map[string]spec.Schema{
 					"selector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A label query over pods that are managed by the daemon set. Must match in order to be controlled. It must match the pod template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
+							Description: "A label query over pods that are managed by the daemon set. Must match in order to be controlled. It must match the k8s template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
-							Description: "An object that describes the pod that will be created. The DaemonSet will create exactly one copy of this pod on every node that matches the template's node selector (or on every node if no node selector is specified). More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template",
+							Description: "An object that describes the k8s that will be created. The DaemonSet will create exactly one copy of this k8s on every node that matches the template's node selector (or on every node if no node selector is specified). More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#k8s-template",
 							Ref:         ref("k8s.io/api/core/v1.PodTemplateSpec"),
 						},
 					},
@@ -2017,7 +2017,7 @@ func schema_k8sio_api_apps_v1_DaemonSetSpec(ref common.ReferenceCallback) common
 					},
 					"minReadySeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The minimum number of seconds for which a newly created DaemonSet pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready).",
+							Description: "The minimum number of seconds for which a newly created DaemonSet k8s should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (k8s will be considered available as soon as it is ready).",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -2047,28 +2047,28 @@ func schema_k8sio_api_apps_v1_DaemonSetStatus(ref common.ReferenceCallback) comm
 				Properties: map[string]spec.Schema{
 					"currentNumberScheduled": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod. More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
+							Description: "The number of nodes that are running at least 1 daemon k8s and are supposed to run the daemon k8s. More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"numberMisscheduled": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of nodes that are running the daemon pod, but are not supposed to run the daemon pod. More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
+							Description: "The number of nodes that are running the daemon k8s, but are not supposed to run the daemon k8s. More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"desiredNumberScheduled": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The total number of nodes that should be running the daemon pod (including nodes correctly running the daemon pod). More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
+							Description: "The total number of nodes that should be running the daemon k8s (including nodes correctly running the daemon k8s). More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"numberReady": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready.",
+							Description: "The number of nodes that should be running the daemon k8s and have one or more of the daemon k8s running and ready.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -2082,21 +2082,21 @@ func schema_k8sio_api_apps_v1_DaemonSetStatus(ref common.ReferenceCallback) comm
 					},
 					"updatedNumberScheduled": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The total number of nodes that are running updated daemon pod",
+							Description: "The total number of nodes that are running updated daemon k8s",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"numberAvailable": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of nodes that should be running the daemon pod and have one or more of the daemon pod running and available (ready for at least spec.minReadySeconds)",
+							Description: "The number of nodes that should be running the daemon k8s and have one or more of the daemon k8s running and available (ready for at least spec.minReadySeconds)",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"numberUnavailable": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of nodes that should be running the daemon pod and have none of the daemon pod running and available (ready for at least spec.minReadySeconds)",
+							Description: "The number of nodes that should be running the daemon k8s and have none of the daemon k8s running and available (ready for at least spec.minReadySeconds)",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -2332,7 +2332,7 @@ func schema_k8sio_api_apps_v1_DeploymentSpec(ref common.ReferenceCallback) commo
 					},
 					"selector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Label selector for pods. Existing ReplicaSets whose pods are selected by this will be the ones affected by this deployment. It must match the pod template's labels.",
+							Description: "Label selector for pods. Existing ReplicaSets whose pods are selected by this will be the ones affected by this deployment. It must match the k8s template's labels.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
@@ -2355,7 +2355,7 @@ func schema_k8sio_api_apps_v1_DeploymentSpec(ref common.ReferenceCallback) commo
 					},
 					"minReadySeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)",
+							Description: "Minimum number of seconds for which a newly created k8s should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (k8s will be considered available as soon as it is ready)",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -2505,7 +2505,7 @@ func schema_k8sio_api_apps_v1_ReplicaSet(ref common.ReferenceCallback) common.Op
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ReplicaSet ensures that a specified number of pod replicas are running at any given time.",
+				Description: "ReplicaSet ensures that a specified number of k8s replicas are running at any given time.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -2663,20 +2663,20 @@ func schema_k8sio_api_apps_v1_ReplicaSetSpec(ref common.ReferenceCallback) commo
 					},
 					"minReadySeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)",
+							Description: "Minimum number of seconds for which a newly created k8s should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (k8s will be considered available as soon as it is ready)",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"selector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Selector is a label query over pods that should match the replica count. Label keys and values that must match in order to be controlled by this replica set. It must match the pod template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
+							Description: "Selector is a label query over pods that should match the replica count. Label keys and values that must match in order to be controlled by this replica set. It must match the k8s template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Template is the object that describes the pod that will be created if insufficient replicas are detected. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template",
+							Description: "Template is the object that describes the k8s that will be created if insufficient replicas are detected. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#k8s-template",
 							Ref:         ref("k8s.io/api/core/v1.PodTemplateSpec"),
 						},
 					},
@@ -2705,7 +2705,7 @@ func schema_k8sio_api_apps_v1_ReplicaSetStatus(ref common.ReferenceCallback) com
 					},
 					"fullyLabeledReplicas": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of pods that have labels matching the labels of the pod template of the replicaset.",
+							Description: "The number of pods that have labels matching the labels of the k8s template of the replicaset.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -2768,7 +2768,7 @@ func schema_k8sio_api_apps_v1_RollingUpdateDaemonSet(ref common.ReferenceCallbac
 				Properties: map[string]spec.Schema{
 					"maxUnavailable": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The maximum number of DaemonSet pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of total number of DaemonSet pods at the start of the update (ex: 10%). Absolute number is calculated from percentage by rounding up. This cannot be 0. Default value is 1. Example: when this is set to 30%, at most 30% of the total number of nodes that should be running the daemon pod (i.e. status.desiredNumberScheduled) can have their pods stopped for an update at any given time. The update starts by stopping at most 30% of those DaemonSet pods and then brings up new DaemonSet pods in their place. Once the new pods are available, it then proceeds onto other DaemonSet pods, thus ensuring that at least 70% of original number of DaemonSet pods are available at all times during the update.",
+							Description: "The maximum number of DaemonSet pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of total number of DaemonSet pods at the start of the update (ex: 10%). Absolute number is calculated from percentage by rounding up. This cannot be 0. Default value is 1. Example: when this is set to 30%, at most 30% of the total number of nodes that should be running the daemon k8s (i.e. status.desiredNumberScheduled) can have their pods stopped for an update at any given time. The update starts by stopping at most 30% of those DaemonSet pods and then brings up new DaemonSet pods in their place. Once the new pods are available, it then proceeds onto other DaemonSet pods, thus ensuring that at least 70% of original number of DaemonSet pods are available at all times during the update.",
 							Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
 						},
 					},
@@ -2986,19 +2986,19 @@ func schema_k8sio_api_apps_v1_StatefulSetSpec(ref common.ReferenceCallback) comm
 					},
 					"selector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "selector is a label query over pods that should match the replica count. It must match the pod template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
+							Description: "selector is a label query over pods that should match the replica count. It must match the k8s template's labels. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
 						},
 					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
-							Description: "template is the object that describes the pod that will be created if insufficient replicas are detected. Each pod stamped out by the StatefulSet will fulfill this Template, but have a unique identity from the rest of the StatefulSet.",
+							Description: "template is the object that describes the k8s that will be created if insufficient replicas are detected. Each k8s stamped out by the StatefulSet will fulfill this Template, but have a unique identity from the rest of the StatefulSet.",
 							Ref:         ref("k8s.io/api/core/v1.PodTemplateSpec"),
 						},
 					},
 					"volumeClaimTemplates": {
 						SchemaProps: spec.SchemaProps{
-							Description: "volumeClaimTemplates is a list of claims that pods are allowed to reference. The StatefulSet controller is responsible for mapping network identities to claims in a way that maintains the identity of a pod. Every claim in this list must have at least one matching (by name) volumeMount in one container in the template. A claim in this list takes precedence over any volumes in the template, with the same name.",
+							Description: "volumeClaimTemplates is a list of claims that pods are allowed to reference. The StatefulSet controller is responsible for mapping network identities to claims in a way that maintains the identity of a k8s. Every claim in this list must have at least one matching (by name) volumeMount in one container in the template. A claim in this list takes precedence over any volumes in the template, with the same name.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -3011,14 +3011,14 @@ func schema_k8sio_api_apps_v1_StatefulSetSpec(ref common.ReferenceCallback) comm
 					},
 					"serviceName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "serviceName is the name of the service that governs this StatefulSet. This service must exist before the StatefulSet, and is responsible for the network identity of the set. Pods get DNS/hostnames that follow the pattern: pod-specific-string.serviceName.default.svc.cluster.local where \"pod-specific-string\" is managed by the StatefulSet controller.",
+							Description: "serviceName is the name of the service that governs this StatefulSet. This service must exist before the StatefulSet, and is responsible for the network identity of the set. Pods get DNS/hostnames that follow the pattern: k8s-specific-string.serviceName.default.svc.cluster.local where \"k8s-specific-string\" is managed by the StatefulSet controller.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"podManagementPolicy": {
 						SchemaProps: spec.SchemaProps{
-							Description: "podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down. The default policy is `OrderedReady`, where pods are created in increasing order (pod-0, then pod-1, etc) and the controller will wait until each pod is ready before continuing. When scaling down, the pods are removed in the opposite order. The alternative policy is `Parallel` which will create pods in parallel to match the desired scale without waiting, and on scale down will delete all pods at once.",
+							Description: "podManagementPolicy controls how pods are created during initial scale up, when replacing pods on nodes, or when scaling down. The default policy is `OrderedReady`, where pods are created in increasing order (k8s-0, then k8s-1, etc) and the controller will wait until each k8s is ready before continuing. When scaling down, the pods are removed in the opposite order. The alternative policy is `Parallel` which will create pods in parallel to match the desired scale without waiting, and on scale down will delete all pods at once.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -3215,19 +3215,19 @@ func schema_k8sio_api_core_v1_Affinity(ref common.ReferenceCallback) common.Open
 				Properties: map[string]spec.Schema{
 					"nodeAffinity": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Describes node affinity scheduling rules for the pod.",
+							Description: "Describes node affinity scheduling rules for the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.NodeAffinity"),
 						},
 					},
 					"podAffinity": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).",
+							Description: "Describes k8s affinity scheduling rules (e.g. co-locate this k8s in the same node, zone, etc. as some other k8s(s)).",
 							Ref:         ref("k8s.io/api/core/v1.PodAffinity"),
 						},
 					},
 					"podAntiAffinity": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).",
+							Description: "Describes k8s anti-affinity scheduling rules (e.g. avoid putting this k8s in the same node, zone, etc. as some other k8s(s)).",
 							Ref:         ref("k8s.io/api/core/v1.PodAntiAffinity"),
 						},
 					},
@@ -3299,7 +3299,7 @@ func schema_k8sio_api_core_v1_AzureDiskVolumeSource(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+				Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"diskName": {
@@ -3355,7 +3355,7 @@ func schema_k8sio_api_core_v1_AzureFilePersistentVolumeSource(ref common.Referen
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+				Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"secretName": {
@@ -3397,7 +3397,7 @@ func schema_k8sio_api_core_v1_AzureFileVolumeSource(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+				Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"secretName": {
@@ -3432,7 +3432,7 @@ func schema_k8sio_api_core_v1_Binding(ref common.ReferenceCallback) common.OpenA
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Binding ties one object to another; for example, a pod is bound to a node by a scheduler. Deprecated in 1.7, please use the bindings subresource of pods instead.",
+				Description: "Binding ties one object to another; for example, a k8s is bound to a node by a scheduler. Deprecated in 1.7, please use the bindings subresource of pods instead.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -3656,7 +3656,7 @@ func schema_k8sio_api_core_v1_CephFSPersistentVolumeSource(ref common.ReferenceC
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a Ceph Filesystem mount that lasts the lifetime of a k8s Cephfs volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"monitors": {
@@ -3720,7 +3720,7 @@ func schema_k8sio_api_core_v1_CephFSVolumeSource(ref common.ReferenceCallback) c
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a Ceph Filesystem mount that lasts the lifetime of a k8s Cephfs volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"monitors": {
@@ -4358,12 +4358,12 @@ func schema_k8sio_api_core_v1_Container(ref common.ReferenceCallback) common.Ope
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "A single application container that you want to run within a pod.",
+				Description: "A single application container that you want to run within a k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.",
+							Description: "Name of the container specified as a DNS_LABEL. Each container in a k8s must have a unique name (DNS_LABEL). Cannot be updated.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -4512,19 +4512,19 @@ func schema_k8sio_api_core_v1_Container(ref common.ReferenceCallback) common.Ope
 					},
 					"livenessProbe": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Periodic probe of container liveness. Container will be restarted if the probe fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+							Description: "Periodic probe of container liveness. Container will be restarted if the probe fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#container-probes",
 							Ref:         ref("k8s.io/api/core/v1.Probe"),
 						},
 					},
 					"readinessProbe": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Periodic probe of container service readiness. Container will be removed from service endpoints if the probe fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+							Description: "Periodic probe of container service readiness. Container will be removed from service endpoints if the probe fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#container-probes",
 							Ref:         ref("k8s.io/api/core/v1.Probe"),
 						},
 					},
 					"startupProbe": {
 						SchemaProps: spec.SchemaProps{
-							Description: "StartupProbe indicates that the Pod has successfully initialized. If specified, no other probes are executed until this completes successfully. If this probe fails, the Pod will be restarted, just as if the livenessProbe failed. This can be used to provide different probe parameters at the beginning of a Pod's lifecycle, when it might take a long time to load data or warm a cache, than during steady-state operation. This cannot be updated. This is a beta feature enabled by the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+							Description: "StartupProbe indicates that the Pod has successfully initialized. If specified, no other probes are executed until this completes successfully. If this probe fails, the Pod will be restarted, just as if the livenessProbe failed. This can be used to provide different probe parameters at the beginning of a Pod's lifecycle, when it might take a long time to load data or warm a cache, than during steady-state operation. This cannot be updated. This is a beta feature enabled by the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#container-probes",
 							Ref:         ref("k8s.io/api/core/v1.Probe"),
 						},
 					},
@@ -4557,7 +4557,7 @@ func schema_k8sio_api_core_v1_Container(ref common.ReferenceCallback) common.Ope
 					},
 					"securityContext": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Security options the pod should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/",
+							Description: "Security options the k8s should run with. More info: https://kubernetes.io/docs/concepts/policy/security-context/ More info: https://kubernetes.io/docs/tasks/configure-k8s-container/security-context/",
 							Ref:         ref("k8s.io/api/core/v1.SecurityContext"),
 						},
 					},
@@ -4635,7 +4635,7 @@ func schema_k8sio_api_core_v1_ContainerPort(ref common.ReferenceCallback) common
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, this must be an IANA_SVC_NAME and unique within the pod. Each named port in a pod must have a unique name. Name for the port that can be referred to by services.",
+							Description: "If specified, this must be an IANA_SVC_NAME and unique within the k8s. Each named port in a k8s must have a unique name. Name for the port that can be referred to by services.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -4649,7 +4649,7 @@ func schema_k8sio_api_core_v1_ContainerPort(ref common.ReferenceCallback) common
 					},
 					"containerPort": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Number of port to expose on the pod's IP address. This must be a valid port number, 0 < x < 65536.",
+							Description: "Number of port to expose on the k8s's IP address. This must be a valid port number, 0 < x < 65536.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -4828,7 +4828,7 @@ func schema_k8sio_api_core_v1_ContainerStatus(ref common.ReferenceCallback) comm
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "This must be a DNS_LABEL. Each container in a pod must have a unique name. Cannot be updated.",
+							Description: "This must be a DNS_LABEL. Each container in a k8s must have a unique name. Cannot be updated.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -4949,7 +4949,7 @@ func schema_k8sio_api_core_v1_DownwardAPIVolumeFile(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "DownwardAPIVolumeFile represents information to create the file containing the pod field",
+				Description: "DownwardAPIVolumeFile represents information to create the file containing the k8s field",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"path": {
@@ -4961,7 +4961,7 @@ func schema_k8sio_api_core_v1_DownwardAPIVolumeFile(ref common.ReferenceCallback
 					},
 					"fieldRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Required: Selects a field of the pod: only annotations, labels, name and namespace are supported.",
+							Description: "Required: Selects a field of the k8s: only annotations, labels, name and namespace are supported.",
 							Ref:         ref("k8s.io/api/core/v1.ObjectFieldSelector"),
 						},
 					},
@@ -5026,7 +5026,7 @@ func schema_k8sio_api_core_v1_EmptyDirVolumeSource(ref common.ReferenceCallback)
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents an empty directory for a pod. Empty directory volumes support ownership management and SELinux relabeling.",
+				Description: "Represents an empty directory for a k8s. Empty directory volumes support ownership management and SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"medium": {
@@ -5038,7 +5038,7 @@ func schema_k8sio_api_core_v1_EmptyDirVolumeSource(ref common.ReferenceCallback)
 					},
 					"sizeLimit": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Total amount of local storage required for this EmptyDir volume. The size limit is also applicable for memory medium. The maximum usage on memory medium EmptyDir would be the minimum value between the SizeLimit specified here and the sum of memory limits of all containers in a pod. The default is nil which means that the limit is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir",
+							Description: "Total amount of local storage required for this EmptyDir volume. The size limit is also applicable for memory medium. The maximum usage on memory medium EmptyDir would be the minimum value between the SizeLimit specified here and the sum of memory limits of all containers in a k8s. The default is nil which means that the limit is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir",
 							Ref:         ref("k8s.io/apimachinery/pkg/api/resource.Quantity"),
 						},
 					},
@@ -5365,7 +5365,7 @@ func schema_k8sio_api_core_v1_EnvVarSource(ref common.ReferenceCallback) common.
 				Properties: map[string]spec.Schema{
 					"fieldRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.",
+							Description: "Selects a field of the k8s: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.",
 							Ref:         ref("k8s.io/api/core/v1.ObjectFieldSelector"),
 						},
 					},
@@ -5383,7 +5383,7 @@ func schema_k8sio_api_core_v1_EnvVarSource(ref common.ReferenceCallback) common.
 					},
 					"secretKeyRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Selects a key of a secret in the pod's namespace",
+							Description: "Selects a key of a secret in the k8s's namespace",
 							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
 						},
 					},
@@ -5399,7 +5399,7 @@ func schema_k8sio_api_core_v1_EphemeralContainer(ref common.ReferenceCallback) c
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "An EphemeralContainer is a container that may be added temporarily to an existing pod for user-initiated activities such as debugging. Ephemeral containers have no resource or scheduling guarantees, and they will not be restarted when they exit or when a pod is removed or restarted. If an ephemeral container causes a pod to exceed its resource allocation, the pod may be evicted. Ephemeral containers may not be added by directly updating the pod spec. They must be added via the pod's ephemeralcontainers subresource, and they will appear in the pod spec once added. This is an alpha feature enabled by the EphemeralContainers feature flag.",
+				Description: "An EphemeralContainer is a container that may be added temporarily to an existing k8s for user-initiated activities such as debugging. Ephemeral containers have no resource or scheduling guarantees, and they will not be restarted when they exit or when a k8s is removed or restarted. If an ephemeral container causes a k8s to exceed its resource allocation, the k8s may be evicted. Ephemeral containers may not be added by directly updating the k8s spec. They must be added via the k8s's ephemeralcontainers subresource, and they will appear in the k8s spec once added. This is an alpha feature enabled by the EphemeralContainers feature flag.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
@@ -5498,7 +5498,7 @@ func schema_k8sio_api_core_v1_EphemeralContainer(ref common.ReferenceCallback) c
 					},
 					"resources": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Resources are not allowed for ephemeral containers. Ephemeral containers use spare resources already allocated to the pod.",
+							Description: "Resources are not allowed for ephemeral containers. Ephemeral containers use spare resources already allocated to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
@@ -5614,7 +5614,7 @@ func schema_k8sio_api_core_v1_EphemeralContainer(ref common.ReferenceCallback) c
 					},
 					"targetContainerName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If set, the name of the container from PodSpec that this ephemeral container targets. The ephemeral container will be run in the namespaces (IPC, PID, etc) of this container. If not set then the ephemeral container is run in whatever namespaces are shared for the pod. Note that the container runtime must support this feature.",
+							Description: "If set, the name of the container from PodSpec that this ephemeral container targets. The ephemeral container will be run in the namespaces (IPC, PID, etc) of this container. If not set then the ephemeral container is run in whatever namespaces are shared for the k8s. Note that the container runtime must support this feature.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -5731,7 +5731,7 @@ func schema_k8sio_api_core_v1_EphemeralContainerCommon(ref common.ReferenceCallb
 					},
 					"resources": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Resources are not allowed for ephemeral containers. Ephemeral containers use spare resources already allocated to the pod.",
+							Description: "Resources are not allowed for ephemeral containers. Ephemeral containers use spare resources already allocated to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
 						},
 					},
@@ -5888,7 +5888,7 @@ func schema_k8sio_api_core_v1_EphemeralContainers(ref common.ReferenceCallback) 
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "A list of ephemeral containers associated with this pod. New ephemeral containers may be appended to this list, but existing ephemeral containers may not be removed or modified.",
+							Description: "A list of ephemeral containers associated with this k8s. New ephemeral containers may be appended to this list, but existing ephemeral containers may not be removed or modified.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -6459,33 +6459,33 @@ func schema_k8sio_api_core_v1_GlusterfsPersistentVolumeSource(ref common.Referen
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Glusterfs mount that lasts the lifetime of a pod. Glusterfs volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a Glusterfs mount that lasts the lifetime of a k8s. Glusterfs volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"endpoints": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EndpointsName is the endpoint name that details Glusterfs topology. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "EndpointsName is the endpoint name that details Glusterfs topology. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"path": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Path is the Glusterfs volume path. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "Path is the Glusterfs volume path. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"readOnly": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
 					},
 					"endpointsNamespace": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EndpointsNamespace is the namespace that contains Glusterfs endpoint. If this field is empty, the EndpointNamespace defaults to the same namespace as the bound PVC. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "EndpointsNamespace is the namespace that contains Glusterfs endpoint. If this field is empty, the EndpointNamespace defaults to the same namespace as the bound PVC. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -6501,26 +6501,26 @@ func schema_k8sio_api_core_v1_GlusterfsVolumeSource(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Glusterfs mount that lasts the lifetime of a pod. Glusterfs volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a Glusterfs mount that lasts the lifetime of a k8s. Glusterfs volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"endpoints": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EndpointsName is the endpoint name that details Glusterfs topology. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "EndpointsName is the endpoint name that details Glusterfs topology. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"path": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Path is the Glusterfs volume path. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "Path is the Glusterfs volume path. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"readOnly": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-pod",
+							Description: "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: https://examples.k8s.io/volumes/glusterfs/README.md#create-a-k8s",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -6554,7 +6554,7 @@ func schema_k8sio_api_core_v1_HTTPGetAction(ref common.ReferenceCallback) common
 					},
 					"host": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Host name to connect to, defaults to the pod IP. You probably want to set \"Host\" in httpHeaders instead.",
+							Description: "Host name to connect to, defaults to the k8s IP. You probably want to set \"Host\" in httpHeaders instead.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -6653,7 +6653,7 @@ func schema_k8sio_api_core_v1_HostAlias(ref common.ReferenceCallback) common.Ope
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "HostAlias holds the mapping between IP and hostnames that will be injected as an entry in the pod's hosts file.",
+				Description: "HostAlias holds the mapping between IP and hostnames that will be injected as an entry in the k8s's hosts file.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"ip": {
@@ -6687,7 +6687,7 @@ func schema_k8sio_api_core_v1_HostPathVolumeSource(ref common.ReferenceCallback)
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a host path mapped into a pod. Host path volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a host path mapped into a k8s. Host path volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"path": {
@@ -7339,7 +7339,7 @@ func schema_k8sio_api_core_v1_NFSVolumeSource(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents an NFS mount that lasts the lifetime of a pod. NFS volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents an NFS mount that lasts the lifetime of a k8s. NFS volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"server": {
@@ -7665,7 +7665,7 @@ func schema_k8sio_api_core_v1_NodeAffinity(ref common.ReferenceCallback) common.
 				Properties: map[string]spec.Schema{
 					"requiredDuringSchedulingIgnoredDuringExecution": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.",
+							Description: "If the affinity requirements specified by this field are not met at scheduling time, the k8s will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during k8s execution (e.g. due to an update), the system may or may not try to eventually evict the k8s from its node.",
 							Ref:         ref("k8s.io/api/core/v1.NodeSelector"),
 						},
 					},
@@ -8062,7 +8062,7 @@ func schema_k8sio_api_core_v1_NodeSpec(ref common.ReferenceCallback) common.Open
 				Properties: map[string]spec.Schema{
 					"podCIDR": {
 						SchemaProps: spec.SchemaProps{
-							Description: "PodCIDR represents the pod IP range assigned to the node.",
+							Description: "PodCIDR represents the k8s IP range assigned to the node.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -8443,7 +8443,7 @@ func schema_k8sio_api_core_v1_ObjectReference(ref common.ReferenceCallback) comm
 					},
 					"fieldPath": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: \"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered the event) or if no container name is specified \"spec.containers[2]\" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.",
+							Description: "If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a k8s, this would take on a value like: \"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered the event) or if no container name is specified \"spec.containers[2]\" (container with index 2 in this k8s). This syntax is chosen only to have some well-defined way of referencing a part of an object.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -8530,7 +8530,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeClaim(ref common.ReferenceCallback
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Spec defines the desired characteristics of a volume requested by a pod author. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims",
+							Description: "Spec defines the desired characteristics of a volume requested by a k8s author. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims",
 							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
 						},
 					},
@@ -8792,12 +8792,12 @@ func schema_k8sio_api_core_v1_PersistentVolumeClaimVolumeSource(ref common.Refer
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PersistentVolumeClaimVolumeSource references the user's PVC in the same namespace. This volume finds the bound PV and mounts that volume for the pod. A PersistentVolumeClaimVolumeSource is, essentially, a wrapper around another type of volume that is owned by someone else (the system).",
+				Description: "PersistentVolumeClaimVolumeSource references the user's PVC in the same namespace. This volume finds the bound PV and mounts that volume for the k8s. A PersistentVolumeClaimVolumeSource is, essentially, a wrapper around another type of volume that is owned by someone else (the system).",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"claimName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims",
+							Description: "ClaimName is the name of a PersistentVolumeClaim in the same namespace as the k8s using this volume. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -8874,13 +8874,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 				Properties: map[string]spec.Schema{
 					"gcePersistentDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
+							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. Provisioned by an admin. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
 							Ref:         ref("k8s.io/api/core/v1.GCEPersistentDiskVolumeSource"),
 						},
 					},
 					"awsElasticBlockStore": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
+							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
 							Ref:         ref("k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource"),
 						},
 					},
@@ -8892,7 +8892,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"glusterfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
+							Description: "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the k8s. Provisioned by an admin. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
 							Ref:         ref("k8s.io/api/core/v1.GlusterfsPersistentVolumeSource"),
 						},
 					},
@@ -8904,13 +8904,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"rbd": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
+							Description: "RBD represents a Rados Block Device mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
 							Ref:         ref("k8s.io/api/core/v1.RBDPersistentVolumeSource"),
 						},
 					},
 					"iscsi": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin.",
+							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. Provisioned by an admin.",
 							Ref:         ref("k8s.io/api/core/v1.ISCSIPersistentVolumeSource"),
 						},
 					},
@@ -8922,19 +8922,19 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"cephfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
+							Description: "CephFS represents a Ceph FS mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.CephFSPersistentVolumeSource"),
 						},
 					},
 					"fc": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.",
+							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.FCVolumeSource"),
 						},
 					},
 					"flocker": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the pod for its usage. This depends on the Flocker control service being running",
+							Description: "Flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the k8s for its usage. This depends on the Flocker control service being running",
 							Ref:         ref("k8s.io/api/core/v1.FlockerVolumeSource"),
 						},
 					},
@@ -8946,7 +8946,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"azureFile": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureFilePersistentVolumeSource"),
 						},
 					},
@@ -8958,13 +8958,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"quobyte": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime",
+							Description: "Quobyte represents a Quobyte mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.QuobyteVolumeSource"),
 						},
 					},
 					"azureDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureDiskVolumeSource"),
 						},
 					},
@@ -8994,7 +8994,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSource(ref common.ReferenceCallbac
 					},
 					"storageos": {
 						SchemaProps: spec.SchemaProps{
-							Description: "StorageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod More info: https://examples.k8s.io/volumes/storageos/README.md",
+							Description: "StorageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the k8s More info: https://examples.k8s.io/volumes/storageos/README.md",
 							Ref:         ref("k8s.io/api/core/v1.StorageOSPersistentVolumeSource"),
 						},
 					},
@@ -9035,13 +9035,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"gcePersistentDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
+							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. Provisioned by an admin. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
 							Ref:         ref("k8s.io/api/core/v1.GCEPersistentDiskVolumeSource"),
 						},
 					},
 					"awsElasticBlockStore": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
+							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
 							Ref:         ref("k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource"),
 						},
 					},
@@ -9053,7 +9053,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"glusterfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
+							Description: "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the k8s. Provisioned by an admin. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
 							Ref:         ref("k8s.io/api/core/v1.GlusterfsPersistentVolumeSource"),
 						},
 					},
@@ -9065,13 +9065,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"rbd": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
+							Description: "RBD represents a Rados Block Device mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
 							Ref:         ref("k8s.io/api/core/v1.RBDPersistentVolumeSource"),
 						},
 					},
 					"iscsi": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin.",
+							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. Provisioned by an admin.",
 							Ref:         ref("k8s.io/api/core/v1.ISCSIPersistentVolumeSource"),
 						},
 					},
@@ -9083,19 +9083,19 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"cephfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
+							Description: "CephFS represents a Ceph FS mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.CephFSPersistentVolumeSource"),
 						},
 					},
 					"fc": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.",
+							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.FCVolumeSource"),
 						},
 					},
 					"flocker": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the pod for its usage. This depends on the Flocker control service being running",
+							Description: "Flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the k8s for its usage. This depends on the Flocker control service being running",
 							Ref:         ref("k8s.io/api/core/v1.FlockerVolumeSource"),
 						},
 					},
@@ -9107,7 +9107,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"azureFile": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureFilePersistentVolumeSource"),
 						},
 					},
@@ -9119,13 +9119,13 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"quobyte": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime",
+							Description: "Quobyte represents a Quobyte mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.QuobyteVolumeSource"),
 						},
 					},
 					"azureDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureDiskVolumeSource"),
 						},
 					},
@@ -9155,7 +9155,7 @@ func schema_k8sio_api_core_v1_PersistentVolumeSpec(ref common.ReferenceCallback)
 					},
 					"storageos": {
 						SchemaProps: spec.SchemaProps{
-							Description: "StorageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod More info: https://examples.k8s.io/volumes/storageos/README.md",
+							Description: "StorageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the k8s More info: https://examples.k8s.io/volumes/storageos/README.md",
 							Ref:         ref("k8s.io/api/core/v1.StorageOSPersistentVolumeSource"),
 						},
 					},
@@ -9325,13 +9325,13 @@ func schema_k8sio_api_core_v1_Pod(ref common.ReferenceCallback) common.OpenAPIDe
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specification of the desired behavior of the pod. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+							Description: "Specification of the desired behavior of the k8s. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
 							Ref:         ref("k8s.io/api/core/v1.PodSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Most recently observed status of the pod. This data may not be up to date. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+							Description: "Most recently observed status of the k8s. This data may not be up to date. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
 							Ref:         ref("k8s.io/api/core/v1.PodStatus"),
 						},
 					},
@@ -9347,12 +9347,12 @@ func schema_k8sio_api_core_v1_PodAffinity(ref common.ReferenceCallback) common.O
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Pod affinity is a group of inter pod affinity scheduling rules.",
+				Description: "Pod affinity is a group of inter k8s affinity scheduling rules.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"requiredDuringSchedulingIgnoredDuringExecution": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
+							Description: "If the affinity requirements specified by this field are not met at scheduling time, the k8s will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during k8s execution (e.g. due to a k8s label update), the system may or may not try to eventually evict the k8s from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -9388,7 +9388,7 @@ func schema_k8sio_api_core_v1_PodAffinityTerm(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running",
+				Description: "Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this k8s should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a k8s of the set of pods is running",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"labelSelector": {
@@ -9399,7 +9399,7 @@ func schema_k8sio_api_core_v1_PodAffinityTerm(ref common.ReferenceCallback) comm
 					},
 					"namespaces": {
 						SchemaProps: spec.SchemaProps{
-							Description: "namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means \"this pod's namespace\"",
+							Description: "namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means \"this k8s's namespace\"",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -9413,7 +9413,7 @@ func schema_k8sio_api_core_v1_PodAffinityTerm(ref common.ReferenceCallback) comm
 					},
 					"topologyKey": {
 						SchemaProps: spec.SchemaProps{
-							Description: "This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.",
+							Description: "This k8s should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9431,12 +9431,12 @@ func schema_k8sio_api_core_v1_PodAntiAffinity(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Pod anti affinity is a group of inter pod anti affinity scheduling rules.",
+				Description: "Pod anti affinity is a group of inter k8s anti affinity scheduling rules.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"requiredDuringSchedulingIgnoredDuringExecution": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
+							Description: "If the anti-affinity requirements specified by this field are not met at scheduling time, the k8s will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during k8s execution (e.g. due to a k8s label update), the system may or may not try to eventually evict the k8s from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -9491,7 +9491,7 @@ func schema_k8sio_api_core_v1_PodAttachOptions(ref common.ReferenceCallback) com
 					},
 					"stdin": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Stdin if true, redirects the standard input stream of the pod for this call. Defaults to false.",
+							Description: "Stdin if true, redirects the standard input stream of the k8s for this call. Defaults to false.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -9519,7 +9519,7 @@ func schema_k8sio_api_core_v1_PodAttachOptions(ref common.ReferenceCallback) com
 					},
 					"container": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The container in which to execute the command. Defaults to only container if there is only one container in the pod.",
+							Description: "The container in which to execute the command. Defaults to only container if there is only one container in the k8s.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9534,19 +9534,19 @@ func schema_k8sio_api_core_v1_PodCondition(ref common.ReferenceCallback) common.
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodCondition contains details for the current condition of this pod.",
+				Description: "PodCondition contains details for the current condition of this k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type is the type of the condition. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-conditions",
+							Description: "Type is the type of the condition. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-conditions",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Status is the status of the condition. Can be True, False, Unknown. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-conditions",
+							Description: "Status is the status of the condition. Can be True, False, Unknown. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-conditions",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9590,7 +9590,7 @@ func schema_k8sio_api_core_v1_PodDNSConfig(ref common.ReferenceCallback) common.
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodDNSConfig defines the DNS parameters of a pod in addition to those generated from DNSPolicy.",
+				Description: "PodDNSConfig defines the DNS parameters of a k8s in addition to those generated from DNSPolicy.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"nameservers": {
@@ -9646,7 +9646,7 @@ func schema_k8sio_api_core_v1_PodDNSConfigOption(ref common.ReferenceCallback) c
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodDNSConfigOption defines DNS resolver options of a pod.",
+				Description: "PodDNSConfigOption defines DNS resolver options of a k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
@@ -9691,21 +9691,21 @@ func schema_k8sio_api_core_v1_PodExecOptions(ref common.ReferenceCallback) commo
 					},
 					"stdin": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Redirect the standard input stream of the pod for this call. Defaults to false.",
+							Description: "Redirect the standard input stream of the k8s for this call. Defaults to false.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
 					},
 					"stdout": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Redirect the standard output stream of the pod for this call. Defaults to true.",
+							Description: "Redirect the standard output stream of the k8s for this call. Defaults to true.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
 					},
 					"stderr": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Redirect the standard error stream of the pod for this call. Defaults to true.",
+							Description: "Redirect the standard error stream of the k8s for this call. Defaults to true.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -9719,7 +9719,7 @@ func schema_k8sio_api_core_v1_PodExecOptions(ref common.ReferenceCallback) commo
 					},
 					"container": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Container in which to execute the command. Defaults to only container if there is only one container in the pod.",
+							Description: "Container in which to execute the command. Defaults to only container if there is only one container in the k8s.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9749,12 +9749,12 @@ func schema_k8sio_api_core_v1_PodIP(ref common.ReferenceCallback) common.OpenAPI
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "IP address information for entries in the (plural) PodIPs field. Each entry includes:\n   IP: An IP address allocated to the pod. Routable at least within the cluster.",
+				Description: "IP address information for entries in the (plural) PodIPs field. Each entry includes:\n   IP: An IP address allocated to the k8s. Routable at least within the cluster.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"ip": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ip is an IP address (IPv4 or IPv6) assigned to the pod",
+							Description: "ip is an IP address (IPv4 or IPv6) assigned to the k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9837,14 +9837,14 @@ func schema_k8sio_api_core_v1_PodLogOptions(ref common.ReferenceCallback) common
 					},
 					"container": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The container for which to stream logs. Defaults to only container if there is one container in the pod.",
+							Description: "The container for which to stream logs. Defaults to only container if there is one container in the k8s.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"follow": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Follow the log stream of the pod. Defaults to false.",
+							Description: "Follow the log stream of the k8s. Defaults to false.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -9858,14 +9858,14 @@ func schema_k8sio_api_core_v1_PodLogOptions(ref common.ReferenceCallback) common
 					},
 					"sinceSeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A relative time in seconds before the current time from which to show logs. If this value precedes the time a pod was started, only logs since the pod start will be returned. If this value is in the future, no logs will be returned. Only one of sinceSeconds or sinceTime may be specified.",
+							Description: "A relative time in seconds before the current time from which to show logs. If this value precedes the time a k8s was started, only logs since the k8s start will be returned. If this value is in the future, no logs will be returned. Only one of sinceSeconds or sinceTime may be specified.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
 					},
 					"sinceTime": {
 						SchemaProps: spec.SchemaProps{
-							Description: "An RFC3339 timestamp from which to show logs. If this value precedes the time a pod was started, only logs since the pod start will be returned. If this value is in the future, no logs will be returned. Only one of sinceSeconds or sinceTime may be specified.",
+							Description: "An RFC3339 timestamp from which to show logs. If this value precedes the time a k8s was started, only logs since the k8s start will be returned. If this value is in the future, no logs will be returned. Only one of sinceSeconds or sinceTime may be specified.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
@@ -9969,7 +9969,7 @@ func schema_k8sio_api_core_v1_PodProxyOptions(ref common.ReferenceCallback) comm
 					},
 					"path": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Path is the URL path to use for the current proxy request to pod.",
+							Description: "Path is the URL path to use for the current proxy request to k8s.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -9984,12 +9984,12 @@ func schema_k8sio_api_core_v1_PodReadinessGate(ref common.ReferenceCallback) com
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodReadinessGate contains the reference to a pod condition",
+				Description: "PodReadinessGate contains the reference to a k8s condition",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"conditionType": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ConditionType refers to a condition in the pod's condition list with matching type.",
+							Description: "ConditionType refers to a condition in the k8s's condition list with matching type.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -10005,7 +10005,7 @@ func schema_k8sio_api_core_v1_PodSecurityContext(ref common.ReferenceCallback) c
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.",
+				Description: "PodSecurityContext holds k8s-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"seLinuxOptions": {
@@ -10057,14 +10057,14 @@ func schema_k8sio_api_core_v1_PodSecurityContext(ref common.ReferenceCallback) c
 					},
 					"fsGroup": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the pod:\n\n1. The owning GID will be the FSGroup 2. The setgid bit is set (new files created in the volume will be owned by FSGroup) 3. The permission bits are OR'd with rw-rw----\n\nIf unset, the Kubelet will not modify the ownership and permissions of any volume.",
+							Description: "A special supplemental group that applies to all containers in a k8s. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the k8s:\n\n1. The owning GID will be the FSGroup 2. The setgid bit is set (new files created in the volume will be owned by FSGroup) 3. The permission bits are OR'd with rw-rw----\n\nIf unset, the Kubelet will not modify the ownership and permissions of any volume.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
 					},
 					"sysctls": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported sysctls (by the container runtime) might fail to launch.",
+							Description: "Sysctls hold a list of namespaced sysctls used for the k8s. Pods with unsupported sysctls (by the container runtime) might fail to launch.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10115,7 +10115,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodSpec is a description of a pod.",
+				Description: "PodSpec is a description of a k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"volumes": {
@@ -10126,7 +10126,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes",
+							Description: "List of volumes that can be mounted by containers belonging to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10145,7 +10145,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "List of initialization containers belonging to the pod. Init containers are executed in order prior to containers being started. If any init container fails, the pod is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/",
+							Description: "List of initialization containers belonging to the k8s. Init containers are executed in order prior to containers being started. If any init container fails, the k8s is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10164,7 +10164,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "List of containers belonging to the pod. Containers cannot currently be added or removed. There must be at least one container in a Pod. Cannot be updated.",
+							Description: "List of containers belonging to the k8s. Containers cannot currently be added or removed. There must be at least one container in a Pod. Cannot be updated.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10183,7 +10183,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "List of ephemeral containers run in this pod. Ephemeral containers may be run in an existing pod to perform user-initiated actions such as debugging. This list cannot be specified when creating a pod, and it cannot be modified by updating the pod spec. In order to add an ephemeral container to an existing pod, use the pod's ephemeralcontainers subresource. This field is alpha-level and is only honored by servers that enable the EphemeralContainers feature.",
+							Description: "List of ephemeral containers run in this k8s. Ephemeral containers may be run in an existing k8s to perform user-initiated actions such as debugging. This list cannot be specified when creating a k8s, and it cannot be modified by updating the k8s spec. In order to add an ephemeral container to an existing k8s, use the k8s's ephemeralcontainers subresource. This field is alpha-level and is only honored by servers that enable the EphemeralContainers feature.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10196,35 +10196,35 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"restartPolicy": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Restart policy for all containers within the pod. One of Always, OnFailure, Never. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy",
+							Description: "Restart policy for all containers within the k8s. One of Always, OnFailure, Never. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle/#restart-policy",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"terminationGracePeriodSeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period will be used instead. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. Defaults to 30 seconds.",
+							Description: "Optional duration in seconds the k8s needs to terminate gracefully. May be decreased in delete request. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period will be used instead. The grace period is the duration in seconds after the processes running in the k8s are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. Defaults to 30 seconds.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
 					},
 					"activeDeadlineSeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Optional duration in seconds the pod may be active on the node relative to StartTime before the system will actively try to mark it failed and kill associated containers. Value must be a positive integer.",
+							Description: "Optional duration in seconds the k8s may be active on the node relative to StartTime before the system will actively try to mark it failed and kill associated containers. Value must be a positive integer.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
 					},
 					"dnsPolicy": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Set DNS policy for the pod. Defaults to \"ClusterFirst\". Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'. DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy. To have DNS options set along with hostNetwork, you have to specify DNS policy explicitly to 'ClusterFirstWithHostNet'.",
+							Description: "Set DNS policy for the k8s. Defaults to \"ClusterFirst\". Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'. DNS parameters given in DNSConfig will be merged with the policy selected with DNSPolicy. To have DNS options set along with hostNetwork, you have to specify DNS policy explicitly to 'ClusterFirstWithHostNet'.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"nodeSelector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/",
+							Description: "NodeSelector is a selector which must be true for the k8s to fit on a node. Selector which must match a node's labels for the k8s to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-k8s-node/",
 							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
 								Allows: true,
@@ -10239,7 +10239,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"serviceAccountName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ServiceAccountName is the name of the ServiceAccount to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+							Description: "ServiceAccountName is the name of the ServiceAccount to use to run this k8s. More info: https://kubernetes.io/docs/tasks/configure-k8s-container/configure-service-account/",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -10260,14 +10260,14 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"nodeName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "NodeName is a request to schedule this pod onto a specific node. If it is non-empty, the scheduler simply schedules this pod onto that node, assuming that it fits resource requirements.",
+							Description: "NodeName is a request to schedule this k8s onto a specific node. If it is non-empty, the scheduler simply schedules this k8s onto that node, assuming that it fits resource requirements.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"hostNetwork": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Host networking requested for this pod. Use the host's network namespace. If this option is set, the ports that will be used must be specified. Default to false.",
+							Description: "Host networking requested for this k8s. Use the host's network namespace. If this option is set, the ports that will be used must be specified. Default to false.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -10288,14 +10288,14 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"shareProcessNamespace": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Share a single process namespace between all of the containers in a pod. When this is set containers will be able to view and signal processes from other containers in the same pod, and the first process in each container will not be assigned PID 1. HostPID and ShareProcessNamespace cannot both be set. Optional: Default to false.",
+							Description: "Share a single process namespace between all of the containers in a k8s. When this is set containers will be able to view and signal processes from other containers in the same k8s, and the first process in each container will not be assigned PID 1. HostPID and ShareProcessNamespace cannot both be set. Optional: Default to false.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
 					},
 					"securityContext": {
 						SchemaProps: spec.SchemaProps{
-							Description: "SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field.",
+							Description: "SecurityContext holds k8s-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field.",
 							Ref:         ref("k8s.io/api/core/v1.PodSecurityContext"),
 						},
 					},
@@ -10307,7 +10307,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod",
+							Description: "ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-k8s",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10320,34 +10320,34 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"hostname": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the hostname of the Pod If not specified, the pod's hostname will be set to a system-defined value.",
+							Description: "Specifies the hostname of the Pod If not specified, the k8s's hostname will be set to a system-defined value.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"subdomain": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, the fully qualified Pod hostname will be \"<hostname>.<subdomain>.<pod namespace>.svc.<cluster domain>\". If not specified, the pod will not have a domainname at all.",
+							Description: "If specified, the fully qualified Pod hostname will be \"<hostname>.<subdomain>.<k8s namespace>.svc.<cluster domain>\". If not specified, the k8s will not have a domainname at all.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"affinity": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, the pod's scheduling constraints",
+							Description: "If specified, the k8s's scheduling constraints",
 							Ref:         ref("k8s.io/api/core/v1.Affinity"),
 						},
 					},
 					"schedulerName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, the pod will be dispatched by specified scheduler. If not specified, the pod will be dispatched by default scheduler.",
+							Description: "If specified, the k8s will be dispatched by specified scheduler. If not specified, the k8s will be dispatched by default scheduler.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"tolerations": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, the pod's tolerations.",
+							Description: "If specified, the k8s's tolerations.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10366,7 +10366,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts file if specified. This is only valid for non-hostNetwork pods.",
+							Description: "HostAliases is an optional list of hosts and IPs that will be injected into the k8s's hosts file if specified. This is only valid for non-hostNetwork pods.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10379,27 +10379,27 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"priorityClassName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, indicates the pod's priority. \"system-node-critical\" and \"system-cluster-critical\" are two special keywords which indicate the highest priorities with the former being the highest priority. Any other name must be defined by creating a PriorityClass object with that name. If not specified, the pod priority will be default or zero if there is no default.",
+							Description: "If specified, indicates the k8s's priority. \"system-node-critical\" and \"system-cluster-critical\" are two special keywords which indicate the highest priorities with the former being the highest priority. Any other name must be defined by creating a PriorityClass object with that name. If not specified, the k8s priority will be default or zero if there is no default.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"priority": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The priority value. Various system components use this field to find the priority of the pod. When Priority Admission Controller is enabled, it prevents users from setting this field. The admission controller populates this field from PriorityClassName. The higher the value, the higher the priority.",
+							Description: "The priority value. Various system components use this field to find the priority of the k8s. When Priority Admission Controller is enabled, it prevents users from setting this field. The admission controller populates this field from PriorityClassName. The higher the value, the higher the priority.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"dnsConfig": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the DNS parameters of a pod. Parameters specified here will be merged to the generated DNS configuration based on DNSPolicy.",
+							Description: "Specifies the DNS parameters of a k8s. Parameters specified here will be merged to the generated DNS configuration based on DNSPolicy.",
 							Ref:         ref("k8s.io/api/core/v1.PodDNSConfig"),
 						},
 					},
 					"readinessGates": {
 						SchemaProps: spec.SchemaProps{
-							Description: "If specified, all readiness gates will be evaluated for pod readiness. A pod is ready when all its containers are ready AND all conditions specified in the readiness gates have status equal to \"True\" More info: https://git.k8s.io/enhancements/keps/sig-network/0007-pod-ready%2B%2B.md",
+							Description: "If specified, all readiness gates will be evaluated for k8s readiness. A k8s is ready when all its containers are ready AND all conditions specified in the readiness gates have status equal to \"True\" More info: https://git.k8s.io/enhancements/keps/sig-network/0007-k8s-ready%2B%2B.md",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10412,14 +10412,14 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"runtimeClassName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RuntimeClassName refers to a RuntimeClass object in the node.k8s.io group, which should be used to run this pod.  If no RuntimeClass resource matches the named class, the pod will not be run. If unset or empty, the \"legacy\" RuntimeClass will be used, which is an implicit class with an empty definition that uses the default runtime handler. More info: https://git.k8s.io/enhancements/keps/sig-node/runtime-class.md This is a beta feature as of Kubernetes v1.14.",
+							Description: "RuntimeClassName refers to a RuntimeClass object in the node.k8s.io group, which should be used to run this k8s.  If no RuntimeClass resource matches the named class, the k8s will not be run. If unset or empty, the \"legacy\" RuntimeClass will be used, which is an implicit class with an empty definition that uses the default runtime handler. More info: https://git.k8s.io/enhancements/keps/sig-node/runtime-class.md This is a beta feature as of Kubernetes v1.14.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"enableServiceLinks": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EnableServiceLinks indicates whether information about services should be injected into pod's environment variables, matching the syntax of Docker links. Optional: Defaults to true.",
+							Description: "EnableServiceLinks indicates whether information about services should be injected into k8s's environment variables, matching the syntax of Docker links. Optional: Defaults to true.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -10433,7 +10433,7 @@ func schema_k8sio_api_core_v1_PodSpec(ref common.ReferenceCallback) common.OpenA
 					},
 					"overhead": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Overhead represents the resource overhead associated with running a pod for a given RuntimeClass. This field will be autopopulated at admission time by the RuntimeClass admission controller. If the RuntimeClass admission controller is enabled, overhead must not be set in Pod create requests. The RuntimeClass admission controller will reject Pod create requests which have the overhead already set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero. More info: https://git.k8s.io/enhancements/keps/sig-node/20190226-pod-overhead.md This field is alpha-level as of Kubernetes v1.16, and is only honored by servers that enable the PodOverhead feature.",
+							Description: "Overhead represents the resource overhead associated with running a k8s for a given RuntimeClass. This field will be autopopulated at admission time by the RuntimeClass admission controller. If the RuntimeClass admission controller is enabled, overhead must not be set in Pod create requests. The RuntimeClass admission controller will reject Pod create requests which have the overhead already set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero. More info: https://git.k8s.io/enhancements/keps/sig-node/20190226-k8s-overhead.md This field is alpha-level as of Kubernetes v1.16, and is only honored by servers that enable the PodOverhead feature.",
 							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
 								Allows: true,
@@ -10482,12 +10482,12 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodStatus represents information about the status of a pod. Status may trail the actual state of a system, especially if the node that hosts the pod cannot contact the control plane.",
+				Description: "PodStatus represents information about the status of a k8s. Status may trail the actual state of a system, especially if the node that hosts the k8s cannot contact the control plane.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The phase of a Pod is a simple, high-level summary of where the Pod is in its lifecycle. The conditions array, the reason and message fields, and the individual container status arrays contain more detail about the pod's status. There are five possible phase values:\n\nPending: The pod has been accepted by the Kubernetes system, but one or more of the container images has not been created. This includes time before being scheduled as well as time spent downloading images over the network, which could take a while. Running: The pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting. Succeeded: All containers in the pod have terminated in success, and will not be restarted. Failed: All containers in the pod have terminated, and at least one container has terminated in failure. The container either exited with non-zero status or was terminated by the system. Unknown: For some reason the state of the pod could not be obtained, typically due to an error in communicating with the host of the pod.\n\nMore info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-phase",
+							Description: "The phase of a Pod is a simple, high-level summary of where the Pod is in its lifecycle. The conditions array, the reason and message fields, and the individual container status arrays contain more detail about the k8s's status. There are five possible phase values:\n\nPending: The k8s has been accepted by the Kubernetes system, but one or more of the container images has not been created. This includes time before being scheduled as well as time spent downloading images over the network, which could take a while. Running: The k8s has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting. Succeeded: All containers in the k8s have terminated in success, and will not be restarted. Failed: All containers in the k8s have terminated, and at least one container has terminated in failure. The container either exited with non-zero status or was terminated by the system. Unknown: For some reason the state of the k8s could not be obtained, typically due to an error in communicating with the host of the k8s.\n\nMore info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-phase",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -10500,7 +10500,7 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "Current service state of pod. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-conditions",
+							Description: "Current service state of k8s. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-conditions",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10513,35 +10513,35 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 					},
 					"message": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A human readable message indicating details about why the pod is in this condition.",
+							Description: "A human readable message indicating details about why the k8s is in this condition.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"reason": {
 						SchemaProps: spec.SchemaProps{
-							Description: "A brief CamelCase message indicating details about why the pod is in this state. e.g. 'Evicted'",
+							Description: "A brief CamelCase message indicating details about why the k8s is in this state. e.g. 'Evicted'",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"nominatedNodeName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "nominatedNodeName is set only when this pod preempts other pods on the node, but it cannot be scheduled right away as preemption victims receive their graceful termination periods. This field does not guarantee that the pod will be scheduled on this node. Scheduler may decide to place the pod elsewhere if other nodes become available sooner. Scheduler may also decide to give the resources on this node to a higher priority pod that is created after preemption. As a result, this field may be different than PodSpec.nodeName when the pod is scheduled.",
+							Description: "nominatedNodeName is set only when this k8s preempts other pods on the node, but it cannot be scheduled right away as preemption victims receive their graceful termination periods. This field does not guarantee that the k8s will be scheduled on this node. Scheduler may decide to place the k8s elsewhere if other nodes become available sooner. Scheduler may also decide to give the resources on this node to a higher priority k8s that is created after preemption. As a result, this field may be different than PodSpec.nodeName when the k8s is scheduled.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"hostIP": {
 						SchemaProps: spec.SchemaProps{
-							Description: "IP address of the host to which the pod is assigned. Empty if not yet scheduled.",
+							Description: "IP address of the host to which the k8s is assigned. Empty if not yet scheduled.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"podIP": {
 						SchemaProps: spec.SchemaProps{
-							Description: "IP address allocated to the pod. Routable at least within the cluster. Empty if not yet allocated.",
+							Description: "IP address allocated to the k8s. Routable at least within the cluster. Empty if not yet allocated.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -10554,7 +10554,7 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "podIPs holds the IP addresses allocated to the pod. If this field is specified, the 0th entry must match the podIP field. Pods may be allocated at most 1 value for each of IPv4 and IPv6. This list is empty if no IPs have been allocated yet.",
+							Description: "podIPs holds the IP addresses allocated to the k8s. If this field is specified, the 0th entry must match the podIP field. Pods may be allocated at most 1 value for each of IPv4 and IPv6. This list is empty if no IPs have been allocated yet.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10567,13 +10567,13 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 					},
 					"startTime": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RFC 3339 date and time at which the object was acknowledged by the Kubelet. This is before the Kubelet pulled the container image(s) for the pod.",
+							Description: "RFC 3339 date and time at which the object was acknowledged by the Kubelet. This is before the Kubelet pulled the container image(s) for the k8s.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
 					"initContainerStatuses": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The list has one entry per init container in the manifest. The most recent successful init container will have ready = true, the most recently started container will have startTime set. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-and-container-status",
+							Description: "The list has one entry per init container in the manifest. The most recent successful init container will have ready = true, the most recently started container will have startTime set. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-and-container-status",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10586,7 +10586,7 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 					},
 					"containerStatuses": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The list has one entry per container in the manifest. Each entry is currently the output of `docker inspect`. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-and-container-status",
+							Description: "The list has one entry per container in the manifest. Each entry is currently the output of `docker inspect`. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#k8s-and-container-status",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10599,14 +10599,14 @@ func schema_k8sio_api_core_v1_PodStatus(ref common.ReferenceCallback) common.Ope
 					},
 					"qosClass": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The Quality of Service (QOS) classification assigned to the pod based on resource requirements See PodQOSClass type for available QOS classes More info: https://git.k8s.io/community/contributors/design-proposals/node/resource-qos.md",
+							Description: "The Quality of Service (QOS) classification assigned to the k8s based on resource requirements See PodQOSClass type for available QOS classes More info: https://git.k8s.io/community/contributors/design-proposals/node/resource-qos.md",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"ephemeralContainerStatuses": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Status for any ephemeral containers that have run in this pod. This field is alpha-level and is only populated by servers that enable the EphemeralContainers feature.",
+							Description: "Status for any ephemeral containers that have run in this k8s. This field is alpha-level and is only populated by servers that enable the EphemeralContainers feature.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10654,7 +10654,7 @@ func schema_k8sio_api_core_v1_PodStatusResult(ref common.ReferenceCallback) comm
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Most recently observed status of the pod. This data may not be up to date. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+							Description: "Most recently observed status of the k8s. This data may not be up to date. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
 							Ref:         ref("k8s.io/api/core/v1.PodStatus"),
 						},
 					},
@@ -10670,7 +10670,7 @@ func schema_k8sio_api_core_v1_PodTemplate(ref common.ReferenceCallback) common.O
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodTemplate describes a template for creating copies of a predefined pod.",
+				Description: "PodTemplate describes a template for creating copies of a predefined k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -10695,7 +10695,7 @@ func schema_k8sio_api_core_v1_PodTemplate(ref common.ReferenceCallback) common.O
 					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Template defines the pods that will be created from this pod template. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+							Description: "Template defines the pods that will be created from this k8s template. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
 							Ref:         ref("k8s.io/api/core/v1.PodTemplateSpec"),
 						},
 					},
@@ -10736,7 +10736,7 @@ func schema_k8sio_api_core_v1_PodTemplateList(ref common.ReferenceCallback) comm
 					},
 					"items": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of pod templates",
+							Description: "List of k8s templates",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -10760,7 +10760,7 @@ func schema_k8sio_api_core_v1_PodTemplateSpec(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PodTemplateSpec describes the data a pod should have when created from a template",
+				Description: "PodTemplateSpec describes the data a k8s should have when created from a template",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"metadata": {
@@ -10771,7 +10771,7 @@ func schema_k8sio_api_core_v1_PodTemplateSpec(ref common.ReferenceCallback) comm
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specification of the desired behavior of the pod. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+							Description: "Specification of the desired behavior of the k8s. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
 							Ref:         ref("k8s.io/api/core/v1.PodSpec"),
 						},
 					},
@@ -10916,14 +10916,14 @@ func schema_k8sio_api_core_v1_Probe(ref common.ReferenceCallback) common.OpenAPI
 					},
 					"initialDelaySeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+							Description: "Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#container-probes",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"timeoutSeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
+							Description: "Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/k8s-lifecycle#container-probes",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -10997,7 +10997,7 @@ func schema_k8sio_api_core_v1_QuobyteVolumeSource(ref common.ReferenceCallback) 
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Quobyte mount that lasts the lifetime of a pod. Quobyte volumes do not support ownership management or SELinux relabeling.",
+				Description: "Represents a Quobyte mount that lasts the lifetime of a k8s. Quobyte volumes do not support ownership management or SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"registry": {
@@ -11053,7 +11053,7 @@ func schema_k8sio_api_core_v1_RBDPersistentVolumeSource(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Rados Block Device mount that lasts the lifetime of a pod. RBD volumes support ownership management and SELinux relabeling.",
+				Description: "Represents a Rados Block Device mount that lasts the lifetime of a k8s. RBD volumes support ownership management and SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"monitors": {
@@ -11131,7 +11131,7 @@ func schema_k8sio_api_core_v1_RBDVolumeSource(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Represents a Rados Block Device mount that lasts the lifetime of a pod. RBD volumes support ownership management and SELinux relabeling.",
+				Description: "Represents a Rados Block Device mount that lasts the lifetime of a k8s. RBD volumes support ownership management and SELinux relabeling.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"monitors": {
@@ -11417,7 +11417,7 @@ func schema_k8sio_api_core_v1_ReplicationControllerSpec(ref common.ReferenceCall
 					},
 					"minReadySeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)",
+							Description: "Minimum number of seconds for which a newly created k8s should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (k8s will be considered available as soon as it is ready)",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -11439,7 +11439,7 @@ func schema_k8sio_api_core_v1_ReplicationControllerSpec(ref common.ReferenceCall
 					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Template is the object that describes the pod that will be created if insufficient replicas are detected. This takes precedence over a TemplateRef. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template",
+							Description: "Template is the object that describes the k8s that will be created if insufficient replicas are detected. This takes precedence over a TemplateRef. More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#k8s-template",
 							Ref:         ref("k8s.io/api/core/v1.PodTemplateSpec"),
 						},
 					},
@@ -11467,7 +11467,7 @@ func schema_k8sio_api_core_v1_ReplicationControllerStatus(ref common.ReferenceCa
 					},
 					"fullyLabeledReplicas": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The number of pods that have labels matching the labels of the pod template of the replication controller.",
+							Description: "The number of pods that have labels matching the labels of the k8s template of the replication controller.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -12337,7 +12337,7 @@ func schema_k8sio_api_core_v1_SecretVolumeSource(ref common.ReferenceCallback) c
 				Properties: map[string]spec.Schema{
 					"secretName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Name of the secret in the pod's namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
+							Description: "Name of the secret in the k8s's namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -12589,7 +12589,7 @@ func schema_k8sio_api_core_v1_ServiceAccount(ref common.ReferenceCallback) commo
 					},
 					"imagePullSecrets": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling any images in pods that reference this ServiceAccount. ImagePullSecrets are distinct from Secrets because Secrets can be mounted in the pod, but ImagePullSecrets are only accessed by the kubelet. More info: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod",
+							Description: "ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling any images in pods that reference this ServiceAccount. ImagePullSecrets are distinct from Secrets because Secrets can be mounted in the k8s, but ImagePullSecrets are only accessed by the kubelet. More info: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-k8s",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -12602,7 +12602,7 @@ func schema_k8sio_api_core_v1_ServiceAccount(ref common.ReferenceCallback) commo
 					},
 					"automountServiceAccountToken": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AutomountServiceAccountToken indicates whether pods running as this service account should have an API token automatically mounted. Can be overridden at the pod level.",
+							Description: "AutomountServiceAccountToken indicates whether pods running as this service account should have an API token automatically mounted. Can be overridden at the k8s level.",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -12644,7 +12644,7 @@ func schema_k8sio_api_core_v1_ServiceAccountList(ref common.ReferenceCallback) c
 					},
 					"items": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of ServiceAccounts. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+							Description: "List of ServiceAccounts. More info: https://kubernetes.io/docs/tasks/configure-k8s-container/configure-service-account/",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -13187,7 +13187,7 @@ func schema_k8sio_api_core_v1_TCPSocketAction(ref common.ReferenceCallback) comm
 					},
 					"host": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Optional: Host name to connect to, defaults to the pod IP.",
+							Description: "Optional: Host name to connect to, defaults to the k8s IP.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -13205,7 +13205,7 @@ func schema_k8sio_api_core_v1_Taint(ref common.ReferenceCallback) common.OpenAPI
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "The node this Taint is attached to has the \"effect\" on any pod that does not tolerate the Taint.",
+				Description: "The node this Taint is attached to has the \"effect\" on any k8s that does not tolerate the Taint.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"key": {
@@ -13248,7 +13248,7 @@ func schema_k8sio_api_core_v1_Toleration(ref common.ReferenceCallback) common.Op
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.",
+				Description: "The k8s this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"key": {
@@ -13260,7 +13260,7 @@ func schema_k8sio_api_core_v1_Toleration(ref common.ReferenceCallback) common.Op
 					},
 					"operator": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.",
+							Description: "Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a k8s can tolerate all taints of a particular category.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -13364,7 +13364,7 @@ func schema_k8sio_api_core_v1_TopologySpreadConstraint(ref common.ReferenceCallb
 				Properties: map[string]spec.Schema{
 					"maxSkew": {
 						SchemaProps: spec.SchemaProps{
-							Description: "MaxSkew describes the degree to which pods may be unevenly distributed. It's the maximum permitted difference between the number of matching pods in any two topology domains of a given topology type. For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same labelSelector spread as 1/1/0: | zone1 | zone2 | zone3 | |   P   |   P   |       | - if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 1/1/1; scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2) violate MaxSkew(1). - if MaxSkew is 2, incoming pod can be scheduled onto any zone. It's a required field. Default value is 1 and 0 is not allowed.",
+							Description: "MaxSkew describes the degree to which pods may be unevenly distributed. It's the maximum permitted difference between the number of matching pods in any two topology domains of a given topology type. For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same labelSelector spread as 1/1/0: | zone1 | zone2 | zone3 | |   P   |   P   |       | - if MaxSkew is 1, incoming k8s can only be scheduled to zone3 to become 1/1/1; scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2) violate MaxSkew(1). - if MaxSkew is 2, incoming k8s can be scheduled onto any zone. It's a required field. Default value is 1 and 0 is not allowed.",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
@@ -13378,7 +13378,7 @@ func schema_k8sio_api_core_v1_TopologySpreadConstraint(ref common.ReferenceCallb
 					},
 					"whenUnsatisfiable": {
 						SchemaProps: spec.SchemaProps{
-							Description: "WhenUnsatisfiable indicates how to deal with a pod if it doesn't satisfy the spread constraint. - DoNotSchedule (default) tells the scheduler not to schedule it - ScheduleAnyway tells the scheduler to still schedule it It's considered as \"Unsatisfiable\" if and only if placing incoming pod on any topology violates \"MaxSkew\". For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same labelSelector spread as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable is set to DoNotSchedule, incoming pod can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1). In other words, the cluster can still be imbalanced, but scheduler won't make it *more* imbalanced. It's a required field.",
+							Description: "WhenUnsatisfiable indicates how to deal with a k8s if it doesn't satisfy the spread constraint. - DoNotSchedule (default) tells the scheduler not to schedule it - ScheduleAnyway tells the scheduler to still schedule it It's considered as \"Unsatisfiable\" if and only if placing incoming k8s on any topology violates \"MaxSkew\". For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same labelSelector spread as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable is set to DoNotSchedule, incoming k8s can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1). In other words, the cluster can still be imbalanced, but scheduler won't make it *more* imbalanced. It's a required field.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -13437,12 +13437,12 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Volume represents a named volume in a pod that may be accessed by any container in the pod.",
+				Description: "Volume represents a named volume in a k8s that may be accessed by any container in the k8s.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Volume's name. Must be a DNS_LABEL and unique within the pod. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+							Description: "Volume's name. Must be a DNS_LABEL and unique within the k8s. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -13455,19 +13455,19 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"emptyDir": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EmptyDir represents a temporary directory that shares a pod's lifetime. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir",
+							Description: "EmptyDir represents a temporary directory that shares a k8s's lifetime. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir",
 							Ref:         ref("k8s.io/api/core/v1.EmptyDirVolumeSource"),
 						},
 					},
 					"gcePersistentDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
+							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
 							Ref:         ref("k8s.io/api/core/v1.GCEPersistentDiskVolumeSource"),
 						},
 					},
 					"awsElasticBlockStore": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
+							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
 							Ref:         ref("k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource"),
 						},
 					},
@@ -13485,19 +13485,19 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"nfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "NFS represents an NFS mount on the host that shares a pod's lifetime More info: https://kubernetes.io/docs/concepts/storage/volumes#nfs",
+							Description: "NFS represents an NFS mount on the host that shares a k8s's lifetime More info: https://kubernetes.io/docs/concepts/storage/volumes#nfs",
 							Ref:         ref("k8s.io/api/core/v1.NFSVolumeSource"),
 						},
 					},
 					"iscsi": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://examples.k8s.io/volumes/iscsi/README.md",
+							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://examples.k8s.io/volumes/iscsi/README.md",
 							Ref:         ref("k8s.io/api/core/v1.ISCSIVolumeSource"),
 						},
 					},
 					"glusterfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
+							Description: "Glusterfs represents a Glusterfs mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
 							Ref:         ref("k8s.io/api/core/v1.GlusterfsVolumeSource"),
 						},
 					},
@@ -13509,7 +13509,7 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"rbd": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
+							Description: "RBD represents a Rados Block Device mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
 							Ref:         ref("k8s.io/api/core/v1.RBDVolumeSource"),
 						},
 					},
@@ -13527,7 +13527,7 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"cephfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
+							Description: "CephFS represents a Ceph FS mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.CephFSVolumeSource"),
 						},
 					},
@@ -13539,19 +13539,19 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"downwardAPI": {
 						SchemaProps: spec.SchemaProps{
-							Description: "DownwardAPI represents downward API about the pod that should populate this volume",
+							Description: "DownwardAPI represents downward API about the k8s that should populate this volume",
 							Ref:         ref("k8s.io/api/core/v1.DownwardAPIVolumeSource"),
 						},
 					},
 					"fc": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.",
+							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.FCVolumeSource"),
 						},
 					},
 					"azureFile": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureFileVolumeSource"),
 						},
 					},
@@ -13569,13 +13569,13 @@ func schema_k8sio_api_core_v1_Volume(ref common.ReferenceCallback) common.OpenAP
 					},
 					"quobyte": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime",
+							Description: "Quobyte represents a Quobyte mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.QuobyteVolumeSource"),
 						},
 					},
 					"azureDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureDiskVolumeSource"),
 						},
 					},
@@ -13633,7 +13633,7 @@ func schema_k8sio_api_core_v1_VolumeDevice(ref common.ReferenceCallback) common.
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "name must match the name of a persistentVolumeClaim in the pod",
+							Description: "name must match the name of a persistentVolumeClaim in the k8s",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -13783,19 +13783,19 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"emptyDir": {
 						SchemaProps: spec.SchemaProps{
-							Description: "EmptyDir represents a temporary directory that shares a pod's lifetime. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir",
+							Description: "EmptyDir represents a temporary directory that shares a k8s's lifetime. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir",
 							Ref:         ref("k8s.io/api/core/v1.EmptyDirVolumeSource"),
 						},
 					},
 					"gcePersistentDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
+							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
 							Ref:         ref("k8s.io/api/core/v1.GCEPersistentDiskVolumeSource"),
 						},
 					},
 					"awsElasticBlockStore": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
+							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
 							Ref:         ref("k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource"),
 						},
 					},
@@ -13813,19 +13813,19 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"nfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "NFS represents an NFS mount on the host that shares a pod's lifetime More info: https://kubernetes.io/docs/concepts/storage/volumes#nfs",
+							Description: "NFS represents an NFS mount on the host that shares a k8s's lifetime More info: https://kubernetes.io/docs/concepts/storage/volumes#nfs",
 							Ref:         ref("k8s.io/api/core/v1.NFSVolumeSource"),
 						},
 					},
 					"iscsi": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://examples.k8s.io/volumes/iscsi/README.md",
+							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the k8s. More info: https://examples.k8s.io/volumes/iscsi/README.md",
 							Ref:         ref("k8s.io/api/core/v1.ISCSIVolumeSource"),
 						},
 					},
 					"glusterfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
+							Description: "Glusterfs represents a Glusterfs mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/glusterfs/README.md",
 							Ref:         ref("k8s.io/api/core/v1.GlusterfsVolumeSource"),
 						},
 					},
@@ -13837,7 +13837,7 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"rbd": {
 						SchemaProps: spec.SchemaProps{
-							Description: "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
+							Description: "RBD represents a Rados Block Device mount on the host that shares a k8s's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md",
 							Ref:         ref("k8s.io/api/core/v1.RBDVolumeSource"),
 						},
 					},
@@ -13855,7 +13855,7 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"cephfs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
+							Description: "CephFS represents a Ceph FS mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.CephFSVolumeSource"),
 						},
 					},
@@ -13867,19 +13867,19 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"downwardAPI": {
 						SchemaProps: spec.SchemaProps{
-							Description: "DownwardAPI represents downward API about the pod that should populate this volume",
+							Description: "DownwardAPI represents downward API about the k8s that should populate this volume",
 							Ref:         ref("k8s.io/api/core/v1.DownwardAPIVolumeSource"),
 						},
 					},
 					"fc": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.",
+							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.FCVolumeSource"),
 						},
 					},
 					"azureFile": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureFileVolumeSource"),
 						},
 					},
@@ -13897,13 +13897,13 @@ func schema_k8sio_api_core_v1_VolumeSource(ref common.ReferenceCallback) common.
 					},
 					"quobyte": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime",
+							Description: "Quobyte represents a Quobyte mount on the host that shares a k8s's lifetime",
 							Ref:         ref("k8s.io/api/core/v1.QuobyteVolumeSource"),
 						},
 					},
 					"azureDisk": {
 						SchemaProps: spec.SchemaProps{
-							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the k8s.",
 							Ref:         ref("k8s.io/api/core/v1.AzureDiskVolumeSource"),
 						},
 					},
@@ -14009,7 +14009,7 @@ func schema_k8sio_api_core_v1_WeightedPodAffinityTerm(ref common.ReferenceCallba
 					},
 					"podAffinityTerm": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Required. A pod affinity term, associated with the corresponding weight.",
+							Description: "Required. A k8s affinity term, associated with the corresponding weight.",
 							Ref:         ref("k8s.io/api/core/v1.PodAffinityTerm"),
 						},
 					},
@@ -15228,7 +15228,7 @@ func schema_pkg_apis_meta_v1_ObjectMeta(ref common.ReferenceCallback) common.Ope
 					},
 					"deletionTimestamp": {
 						SchemaProps: spec.SchemaProps{
-							Description: "DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This field is set by the server when a graceful deletion is requested by the user, and is not directly settable by a client. The resource is expected to be deleted (no longer visible from resource lists, and not reachable by name) after the time in this field, once the finalizers list is empty. As long as the finalizers list contains items, deletion is blocked. Once the deletionTimestamp is set, this value may not be unset or be set further into the future, although it may be shortened or the resource may be deleted prior to this time. For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react by sending a graceful termination signal to the containers in the pod. After that 30 seconds, the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup, remove the pod from the API. In the presence of network partitions, this object may still exist after this timestamp, until an administrator or automated process can determine the resource is fully terminated. If not set, graceful deletion of the object has not been requested.\n\nPopulated by the system when a graceful deletion is requested. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",
+							Description: "DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This field is set by the server when a graceful deletion is requested by the user, and is not directly settable by a client. The resource is expected to be deleted (no longer visible from resource lists, and not reachable by name) after the time in this field, once the finalizers list is empty. As long as the finalizers list contains items, deletion is blocked. Once the deletionTimestamp is set, this value may not be unset or be set further into the future, although it may be shortened or the resource may be deleted prior to this time. For example, a user may request that a k8s is deleted in 30 seconds. The Kubelet will react by sending a graceful termination signal to the containers in the k8s. After that 30 seconds, the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup, remove the k8s from the API. In the presence of network partitions, this object may still exist after this timestamp, until an administrator or automated process can determine the resource is fully terminated. If not set, graceful deletion of the object has not been requested.\n\nPopulated by the system when a graceful deletion is requested. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
