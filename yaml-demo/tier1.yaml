@@ -1,0 +1,9 @@
+---
+apiVersion: security.lynx.smartx.com/v1alpha1
+kind: Tier
+metadata:
+  # 名称，全局唯一，UID 不可修改
+  name: tier1
+spec:
+  priority: 300
+  tierMode: Whitelist

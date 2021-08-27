@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/smartxworks/lynx/pkg/controller/k8s"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -101,6 +102,14 @@ func main() {
 		ReadClient: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr); err != nil {
 		klog.Fatalf("unable to create policy controller: %s", err.Error())
+	}
+
+	// k8s controller
+	if err = (&k8s.PodReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		klog.Fatalf("unable to create k8s controller: %s", err.Error())
 	}
 
 	// register validate handle

@@ -1,0 +1,15 @@
+
+---
+apiVersion: security.lynx.smartx.com/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: security-policy-1
+spec:
+  appliedTo:
+    endpoints:
+      - endpoint-default-nginx-worker1
+      - endpoint-default-nginx-worker2
+  priority: 300
+  tier: tier1
+  symmetricMode: true
+

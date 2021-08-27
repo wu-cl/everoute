@@ -18,6 +18,9 @@ package main
 
 import (
 	"flag"
+	cniserver "github.com/smartxworks/lynx/pkg/agent/cniserver"
+	"github.com/smartxworks/lynx/pkg/agent/proxy"
+	corev1 "k8s.io/api/core/v1"
 	"net"
 	"time"
 
@@ -41,6 +44,7 @@ var (
 func init() {
 	_ = networkpolicyv1alpha1.AddToScheme(scheme)
 	_ = agentv1alpha1.AddToScheme(scheme)
+	_ = corev1.AddToScheme(scheme)
 }
 
 func main() {
@@ -108,6 +112,11 @@ func main() {
 	})
 	go agentmonitor.Run(stopChan)
 
+	// cni server
+	cniServer := cniserver.CNIServer{}
+	cniServer.Initialize(k8sClient)
+	go cniServer.Run(stopChan)
+
 	<-stopChan
 }
 
@@ -133,6 +142,15 @@ func startManager(scheme *runtime.Scheme, agent *ofnet.OfnetAgent, stopChan <-ch
 		Agent:  agent,
 	}).SetupWithManager(mgr); err != nil {
 		klog.Errorf("unable to create policyrule controller: %s", err.Error())
+		return nil, err
+	}
+
+	if err = (&proxy.NodeReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		StopChan: stopChan,
+	}).SetupWithManager(mgr); err != nil {
+		klog.Errorf("unable to create node controller: %s", err.Error())
 		return nil, err
 	}
 

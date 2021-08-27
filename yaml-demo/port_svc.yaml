@@ -1,0 +1,20 @@
+
+---
+apiVersion: security.lynx.smartx.com/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: security-policy-1
+spec:
+  appliedTo:
+    endpoints:
+      - endpoint-default-nginx-test
+  egressRules:
+    - name: egress01
+      to:
+        ipBlocks:
+          - ip: 192.168.24.32
+            prefixLength: 32
+  priority: 300
+  tier: tier1
+  symmetricMode: true
+
