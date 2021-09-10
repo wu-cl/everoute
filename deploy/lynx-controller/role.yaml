@@ -11,6 +11,8 @@ rules:
   resources:
   - configmaps
   - events
+  - pods
+  - nodes
   verbs:
   - patch
   - create
@@ -61,9 +63,11 @@ rules:
   verbs:
   - patch
   - update
+  - delete
   - get
   - list
   - watch
+  - create
 - apiGroups:
   - policyrule.lynx.smartx.com
   resources:

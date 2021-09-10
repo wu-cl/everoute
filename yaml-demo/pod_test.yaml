@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod-worker1
+  labels:
+    app: test-pod
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: worker1
+  containers:
+    - name: test-pod-worker1
+      command: ["test_sleep"]
+      securityContext:
+        privileged: true
+      image: lynx/dev:latest
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod-worker2
+  labels:
+    app: test-pod
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: worker2
+  containers:
+    - name: test-pod-worker2
+      command: ["test_sleep"]
+      securityContext:
+        privileged: true
+      image: lynx/dev:latest
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod-test
+  labels:
+    app: test-pod
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: worker2
+  containers:
+    - name: test-pod-test
+      command: ["test_sleep"]
+      securityContext:
+        privileged: true
+      image: lynx/dev:latest
