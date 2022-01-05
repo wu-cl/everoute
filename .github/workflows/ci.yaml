@@ -85,6 +85,12 @@ jobs:
       - name: run e2e test cases
         run: sudo -H make e2e-test
 
+  run-k8s-e2e:
+    runs-on: self-hosted
+    steps:
+      - name: run e2e test cases
+        run: ls -la && pwd
+
   generate-check:
     runs-on: [ubuntu-20.04]
     steps:
