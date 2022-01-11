@@ -7,35 +7,38 @@ on:
   push:
     branches: [ main ]
 
-jobs:
-  pr-check:
-    runs-on: [ ubuntu-20.04 ]
+  schedule:
+    # 7:00 UTC+8
+    - cron: '0 23 * * *'
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ^1.15
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - uses: RyanSiu1995/kubebuilder-action@v1.2.1
-        with:
-          version: 2.3.1
-          etcdVersion: 3.5.0
-      - name: setup openvswitch
-        run: sudo sh -c "apt update && apt install -y openvswitch-switch && systemctl start openvswitch-switch"
-      - name: run everoute unit test
-        run: |
-          sudo make test
-          sudo make race-test
-          sudo make cover-test
-      - uses: codecov/codecov-action@v2
-        with:
-          files: ./coverage.out
+jobs:
+  #pr-check:
+  #  runs-on: [ ubuntu-20.04 ]
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - uses: actions/setup-go@v2
+  #      with:
+  #        go-version: ^1.15
+  #    - uses: actions/cache@v2
+  #      with:
+  #        path: ~/go/pkg/mod
+  #        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #        restore-keys: |
+  #          ${{ runner.os }}-go-
+  #    - uses: RyanSiu1995/kubebuilder-action@v1.2.1
+  #      with:
+  #        version: 2.3.1
+  #        etcdVersion: 3.5.0
+  #    - name: setup openvswitch
+  #      run: sudo sh -c "apt update && apt install -y openvswitch-switch && systemctl start openvswitch-switch"
+  #    - name: run everoute unit test
+  #      run: |
+  #        sudo make test
+  #        sudo make race-test
+  #        sudo make cover-test
+  #    - uses: codecov/codecov-action@v2
+  #      with:
+  #        files: ./coverage.out
 
   golint:
     runs-on: [ ubuntu-20.04 ]
@@ -50,81 +53,89 @@ jobs:
           skip-build-cache: true
           skip-pkg-cache: true
 
-  run-deploy:
+  #run-deploy:
+  #  runs-on: [ ubuntu-20.04 ]
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #
+  #    - name: install k8s
+  #      run: |
+  #        curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE=777 sh -
+  #        mkdir -p ~/.kube && cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+  #
+  #    - name: build and import image
+  #      run: |
+  #        make image
+  #        docker save everoute/release | sudo k3s ctr images import -
+  #
+  #    - name: make kubernetes deploy test
+  #      run: make deploy-test
+
+  #run-e2e:
+  #  runs-on: [ ubuntu-20.04 ]
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #
+  #    - name: install e2e environment dependency
+  #      run: sudo sh -c "apt update && apt install -y openvswitch-switch && systemctl start openvswitch-switch"
+  #
+  #    - name: allow ssh connect to localhost
+  #      run: sudo -H sh -c "ssh-keygen -qN '' </dev/zero; cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys"
+  #
+  #    - name: setup e2e environment
+  #      run: sudo -H bash tests/e2e/scripts/e2e-setup.sh
+  #
+  #    - name: run e2e test cases
+  #      run: sudo -H make e2e-test
+
+  #run-k8s-e2e:
+  #  runs-on: self-hosted
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #
+  #    - name: build everoute and deploy
+  #      run: sudo skaffold run -d=harbor.smartx.com/everoute
+  #
+  #    - name: wait everoute ready
+  #      run: bash hack/check_ready.sh
+  #
+  #    - uses: actions/checkout@v2
+  #      with:
+  #        repository: 'kubernetes/kubernetes'
+  #        ref: 'v1.21.5'
+  #        path: './kubernetes'
+  #
+  #    - name: apply e2e patch
+  #      run: cd kubernetes && git apply ../hack/0001-test-e2e-add-sleep-before-cannot-conntect-test.patch
+  #
+  #    - name: build e2e
+  #      run: cd kubernetes && make all WHAT=test/e2e/e2e.test && make all WHAT=vendor/github.com/onsi/ginkgo/ginkgo
+  #
+  #    - name: remove remained ns in last test
+  #      run: kubectl get ns | grep "policy\|netpol"  | awk '{print $1}' | xargs kubectl delete ns || echo "finish"
+  #
+  #    - name: run test cases
+  #      run: bash hack/run-k8s-e2e.sh
+
+  #generate-check:
+  #  runs-on: [ ubuntu-20.04 ]
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #
+  #    - name: make docker-generate
+  #      run: sudo sh -c "make image-generate && make docker-generate"
+  #
+  #    - name: check if code changes
+  #      run: sudo sh -c "git add -A && git diff HEAD --exit-code"
+  #
+  #    - name: show message if failed
+  #      if: ${{ failure() }}
+  #      run: echo "::error::Please run \"make generate\" or \"make docker-generate\" before commit."
+
+  slack-notification:
     runs-on: [ ubuntu-20.04 ]
     steps:
-      - uses: actions/checkout@v2
-
-      - name: install k8s
-        run: |
-          curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE=777 sh -
-          mkdir -p ~/.kube && cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-
-      - name: build and import image
-        run: |
-          make image
-          docker save everoute/release | sudo k3s ctr images import -
-
-      - name: make kubernetes deploy test
-        run: make deploy-test
-
-  run-e2e:
-    runs-on: [ ubuntu-20.04 ]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: install e2e environment dependency
-        run: sudo sh -c "apt update && apt install -y openvswitch-switch && systemctl start openvswitch-switch"
-
-      - name: allow ssh connect to localhost
-        run: sudo -H sh -c "ssh-keygen -qN '' </dev/zero; cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys"
-
-      - name: setup e2e environment
-        run: sudo -H bash tests/e2e/scripts/e2e-setup.sh
-
-      - name: run e2e test cases
-        run: sudo -H make e2e-test
-
-  run-k8s-e2e:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: build everoute and deploy
-        run: sudo skaffold run -d=harbor.smartx.com/everoute
-
-      - name: wait everoute ready
-        run: bash hack/check_ready.sh
-
-      - uses: actions/checkout@v2
-        with:
-          repository: 'kubernetes/kubernetes'
-          ref: 'v1.21.5'
-          path: './kubernetes'
-
-      - name: apply e2e patch
-        run: cd kubernetes && git apply ../hack/0001-test-e2e-add-sleep-before-cannot-conntect-test.patch
-
-      - name: build e2e
-        run: cd kubernetes && make all WHAT=test/e2e/e2e.test && make all WHAT=vendor/github.com/onsi/ginkgo/ginkgo
-
-      - name: remove remained ns in last test
-        run: kubectl get ns | grep "policy\|netpol"  | awk '{print $1}' | xargs kubectl delete ns || echo "finish"
-
-      - name: run test cases
-        run: bash hack/run-k8s-e2e.sh
-
-  generate-check:
-    runs-on: [ ubuntu-20.04 ]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: make docker-generate
-        run: sudo sh -c "make image-generate && make docker-generate"
-
-      - name: check if code changes
-        run: sudo sh -c "git add -A && git diff HEAD --exit-code"
-
-      - name: show message if failed
-        if: ${{ failure() }}
-        run: echo "::error::Please run \"make generate\" or \"make docker-generate\" before commit."
+      - name: Send GitHub Action trigger data to Slack workflow
+        uses: slackapi/slack-github-action@v1.17.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_E2E_URL_WCL }}
