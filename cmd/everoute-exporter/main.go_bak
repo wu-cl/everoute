@@ -1,0 +1,187 @@
+package main
+
+import (
+	"bytes"
+	"flag"
+	"fmt"
+	"github.com/Shopify/sarama"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"log"
+	"net"
+	"strings"
+	"time"
+
+	"github.com/netsampler/goflow2/decoders/sflow"
+	"github.com/ti-mo/conntrack"
+)
+
+var (
+	command   string
+	hosts     string
+	topic     string
+	partition int
+
+	client   sarama.Client
+	producer sarama.AsyncProducer
+	err      error
+)
+
+func main() {
+	flag.StringVar(&command, "command", "consumer", "consumer|producer")
+	flag.StringVar(&hosts, "host", "192.168.25.218:9092", "Common separated kafka hosts")
+	flag.StringVar(&topic, "topic", "test", "Kafka topic")
+	flag.IntVar(&partition, "partition", 1, "Kafka topic partition")
+	flag.Parse()
+
+	client, err = sarama.NewClient(strings.Split(hosts, ","), sarama.NewConfig())
+	if err != nil {
+		log.Fatalf("unable to create kafka client: %q", err)
+	}
+
+	producer, err = sarama.NewAsyncProducerFromClient(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer producer.Close()
+
+	//go ConntrackWorker()
+	go SFlowWorker()
+
+	time.Sleep(9999 * time.Second)
+}
+
+func SFlowWorker() {
+	fmt.Println("init")
+	udpConn, err := net.ListenUDP("udp", &net.UDPAddr{
+		IP:   net.IPv4(127, 0, 0, 1),
+		Port: 6343,
+	})
+
+	if err != nil {
+		log.Fatal("Listen failed,", err)
+		return
+	}
+	fmt.Println("listen")
+	for {
+		fmt.Println("receive")
+		var data [10240]byte
+		n, addr, err := udpConn.ReadFromUDP(data[:])
+		if err != nil {
+			log.Printf("Read from udp server:%s failed,err:%s", addr, err)
+			break
+		}
+
+		packet, _ := sflow.DecodeMessage(bytes.NewBuffer(data[:n]))
+		if packet != nil {
+			packet := packet.(sflow.Packet)
+
+			for _, sample := range packet.Samples {
+				switch sample.(type) {
+				case sflow.FlowSample:
+					flowSample := sample.(sflow.FlowSample)
+					for _, record := range flowSample.Records {
+						fmt.Println(record.Header.DataFormat)
+						if record.Header.DataFormat == sflow.FORMAT_RAW_PKT {
+							r := record.Data.(sflow.SampledHeader)
+							fmt.Printf("proto %d,frame len %d,origin len %d\n", r.Protocol, r.FrameLength, r.OriginalLength)
+
+							raw := layers.Ethernet{}
+							err := raw.DecodeFromBytes(r.HeaderData, gopacket.NilDecodeFeedback)
+							if err != nil {
+								log.Fatal(err)
+								return
+							}
+
+							switch raw.EthernetType {
+							case layers.EthernetTypeARP:
+								arp := layers.ARP{}
+								err := arp.DecodeFromBytes(r.HeaderData, gopacket.NilDecodeFeedback)
+								if err != nil {
+									log.Fatal(err)
+									return
+								}
+								fmt.Printf("who has %s, tell %s\n", arp.AddrType, ip.DstIP)
+							case layers.EthernetTypeIPv4:
+								ip := layers.IPv4{}
+								err := ip.DecodeFromBytes(r.HeaderData, gopacket.NilDecodeFeedback)
+								if err != nil {
+									log.Fatal(err)
+									return
+								}
+								fmt.Printf("%s -> %s\n", ip.SrcIP, ip.DstIP)
+							}
+
+
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+}
+
+func ConntrackWorker() {
+	ticker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			ConntrackerDump()
+		}
+	}
+
+}
+
+func ConntrackerDump() {
+	fmt.Println("dump")
+
+	// Open a Conntrack connection.
+	c, err := conntrack.Dial(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	flows, _ := c.Dump()
+	for _, f := range flows {
+		origin := fmt.Sprintf("Origin %s -> %s pkt:%d\n", f.TupleOrig.IP.SourceAddress, f.TupleOrig.IP.DestinationAddress, f.CountersOrig.Packets)
+		reply := fmt.Sprintf("Reply %s -> %s pkt:%d\n", f.TupleReply.IP.SourceAddress, f.TupleReply.IP.DestinationAddress, f.CountersReply.Packets)
+		//fmt.Printf(origin)
+		//fmt.Printf(reply)
+
+		ToKafka(origin + reply)
+
+	}
+}
+
+func ToKafka(msg string) {
+	producer.Input() <- &sarama.ProducerMessage{Topic: topic, Key: nil, Value: sarama.StringEncoder(msg)}
+}
+
+/*
+func ConntrackerDump() {
+	fmt.Println("dump")
+	nfct, err := ct.Open(&ct.Config{})
+	if err != nil {
+		fmt.Println("could not create nfct:", err)
+		return
+	}
+	defer nfct.Close()
+
+	// Get all IPv4 entries of the expected table.
+	sessions, err := nfct.Dump(ct.Conntrack, ct.IPv4)
+	if err != nil {
+		fmt.Println("could not dump sessions:", err)
+		return
+	}
+
+	// Print out all expected sessions.
+	for _, session := range sessions {
+		if session.CounterOrigin != nil && session.CounterReply != nil {
+			fmt.Printf("Origin %s -> %s pkt:%d\n", session.Origin.Src, session.Origin.Dst, session.CounterOrigin.Bytes32)
+			fmt.Printf("Reply %s -> %s pkt:%d\n", session.Reply.Src, session.Reply.Dst, session.CounterReply.Bytes32)
+		}
+	}
+}
+*/
