@@ -3,24 +3,29 @@ package main
 import (
 	"flag"
 	"fmt"
-	"google.golang.org/protobuf/proto"
-	"k8s.io/apimachinery/pkg/util/uuid"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/everoute/everoute/pkg/apis/exporter/v1alpha1"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/ti-mo/conntrack"
+	"google.golang.org/protobuf/proto"
+	"k8s.io/apimachinery/pkg/util/uuid"
+
+	"github.com/everoute/everoute/pkg/apis/exporter/v1alpha1"
 )
 
 var (
-	hosts string
-	topic string
+	hosts      string
+	topic      string
+	listenPort int
+	agentID    string
 
 	producer   sarama.AsyncProducer
 	err        error
@@ -62,10 +67,6 @@ func (s *SFlowCache) AddArp(arp layers.ARP) {
 
 	s.arpSend = append(s.arpSend, arp)
 	s.ipMac[ParseByteIPv4(arp.SourceProtAddress).String()] = arp.SourceHwAddress
-
-	fmt.Printf("  - arp who has %s, tell %s\n",
-		ParseByteIPv4(arp.DstProtAddress).String(), ParseByteIPv4(arp.SourceProtAddress).String())
-
 }
 
 func (s *SFlowCache) GetMac(ip string) []byte {
@@ -93,13 +94,13 @@ func (s *SFlowCache) AddIp(pkt gopacket.Packet) {
 	defer s.mutex.Unlock()
 
 	s.ipMac[ParseByteIPv4(ip.SrcIP).String()] = eth.SrcMAC
-	fmt.Printf("  - ip %s -> %s\n", ip.SrcIP.String(), ip.DstIP.String())
-
 }
 
 func main() {
 	flag.StringVar(&hosts, "host", "192.168.26.10:9092,192.168.28.177:9092,192.168.30.12:9092", "Kafka hosts")
 	flag.StringVar(&topic, "topic", "test", "Kafka topic")
+	flag.IntVar(&listenPort, "port", 2345, "Listen port")
+	flag.StringVar(&agentID, "agent-id", "", "Agent ID")
 	flag.Parse()
 
 	stopChan = make(chan struct{})
@@ -119,11 +120,28 @@ func main() {
 
 	sFlowCache = sFlowCache.New(sFlowChan)
 
+	// catch ctrl + c
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, os.Kill)
+	go func() {
+		<-signals
+		log.Printf("Caught signal, stopping")
+		close(stopChan)
+	}()
+
+	err = configSflowForOVS(listenPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer mustCleanOVSConfig()
+
 	go ConntrackCollecter(ctChan, stopChan)
 	go ConntrackWorker(ctChan, sFlowCache, stopChan)
 
 	go SFlowCollector(sFlowChan, stopChan)
 	go SFlowWorker(sFlowChan, sFlowCache, stopChan)
+
+	go KafkaErrorCheck(stopChan)
 
 	<-stopChan
 }
@@ -131,7 +149,7 @@ func main() {
 func SFlowCollector(flow chan layers.SFlowDatagram, stopChan chan struct{}) {
 	udpConn, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(127, 0, 0, 1),
-		Port: 6666,
+		Port: listenPort,
 	})
 
 	if err != nil {
@@ -162,9 +180,9 @@ func ConntrackWorker(channel chan []conntrack.Flow, sFlowCache *SFlowCache, stop
 	for {
 		select {
 		case flows := <-channel:
-			fmt.Printf("%+v\n", sFlowCache.ipMac)
+			//			fmt.Printf("%+v\n", sFlowCache.ipMac)
 			flow := &v1alpha1.FlowMessage{
-				AgentId: "666666",
+				AgentId: agentID,
 				Flow:    []*v1alpha1.Flow{},
 			}
 
@@ -227,8 +245,11 @@ func ConntrackWorker(channel chan []conntrack.Flow, sFlowCache *SFlowCache, stop
 				flow.Flow = append(flow.Flow, tmp)
 			}
 
-			fmt.Println(flow)
-			b, _ := proto.Marshal(flow)
+			//			fmt.Println(flow)
+			b, err := proto.Marshal(flow)
+			if err != nil {
+				log.Println(err)
+			}
 			ToKafka(b)
 
 		case <-stopChan:
@@ -301,7 +322,10 @@ func ConntrackCollecter(ct chan []conntrack.Flow, stopChan chan struct{}) {
 	for {
 		select {
 		case <-ticker.C:
-			flows, _ := c.Dump()
+			flows, err := c.Dump()
+			if err != nil {
+				log.Printf("dump flows: %s", err)
+			}
 			ct <- flows
 		case <-stopChan:
 			return
@@ -316,5 +340,16 @@ func ToKafka(msg []byte) {
 		Topic: topic,
 		Key:   sarama.ByteEncoder(uuid.NewUUID()),
 		Value: sarama.ByteEncoder(msg),
+	}
+}
+
+func KafkaErrorCheck(stopChan <-chan struct{}) {
+	for {
+		select {
+		case err := <-producer.Errors():
+			log.Printf("producer error: %s", err)
+		case <-stopChan:
+			return
+		}
 	}
 }
