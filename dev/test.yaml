@@ -1,0 +1,15 @@
+
+---
+apiVersion: security.everoute.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: security-policy-1
+spec:
+  appliedTo:
+    endpoints:
+      - pod-55296c826c8c3a18550bfc73af82c7f1
+      - pod-b6cf40e882ab6357201e33c0fb1dff30
+  priority: 300
+  tier: tier1
+  symmetricMode: true
+

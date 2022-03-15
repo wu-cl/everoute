@@ -1664,6 +1664,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: everoute-agent
+      priorityClassName: system-node-critical
       containers:
         - name: init-agent
           command: [ "init_agent" ]
@@ -1729,8 +1730,12 @@ spec:
               mountPath: /opt/cni/bin/
             - name: everoute-ipam
               mountPath: /var/lib/cni/networks/everoute
+            - mountPath: /lib/modules
+              name: host-lib-modules
             - name: tmp
               mountPath: /tmp
+            - mountPath: /run/xtables.lock
+              name: xtables-lock
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -1749,6 +1754,10 @@ spec:
         - hostPath:
             path: /var/lib/everoute/
           name: everoute-agent
+        - hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+          name: xtables-lock
         - hostPath:
             path: /var/lib/cni/networks/everoute
           name: everoute-ipam

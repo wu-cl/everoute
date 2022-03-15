@@ -31,16 +31,13 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containernetworking/plugins/plugins/ipam/host-local/backend/allocator"
 	"github.com/contiv/ofnet/ovsdbDriver"
-	"github.com/j-keck/arping"
 	"github.com/vishvananda/netlink"
 	"google.golang.org/grpc"
-	coretypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/everoute/everoute/pkg/agent/datapath"
 	cnipb "github.com/everoute/everoute/pkg/apis/cni/v1alpha1"
-	"github.com/everoute/everoute/pkg/utils"
 )
 
 const CNISocketAddr = "/var/run/everoute/cni.sock"
@@ -112,28 +109,25 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		return s.RetError(cnipb.ErrorCode_DECODING_FAILURE, "Parse request conf error", err)
 	}
 
-	// require ipam for a new ip address
-	SetEnv(request)
-	r, err := ipam.ExecAdd("host-local", s.GetIpamConfByte(conf))
-	if err != nil {
-		klog.Errorf("could not allocate ip address, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_INVALID_NETWORK_CONFIG, "could not allocate ip address", err)
-	}
-	ipamResult, err := cniv1.NewResultFromResult(r)
-	if err != nil {
-		klog.Errorf("could not convert result, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_DECODING_FAILURE, "could not convert result", err)
-	}
-
 	// create cni result structure
+	ipA, ipNet, _ := net.ParseCIDR(string(args.K8S_POD_NAME) + "/20")
+	klog.Info(ipA)
+	klog.Info(ipNet)
 	result := &cniv1.Result{
 		CNIVersion: conf.CNIVersion,
-		IPs:        ipamResult.IPs,
+		IPs: []*cniv1.IPConfig{{
+			Address: net.IPNet{
+				IP:   ipA,
+				Mask: ipNet.Mask,
+			},
+			Gateway: net.ParseIP("192.168.16.1"),
+		},
+		},
 		Routes: []*cnitypes.Route{{
 			Dst: net.IPNet{
 				IP:   net.IPv4zero,
 				Mask: net.IPMask(net.IPv4zero)},
-			GW: ipamResult.IPs[0].Gateway}},
+			GW: net.ParseIP("192.168.16.1")}},
 		Interfaces: []*cniv1.Interface{{
 			Name:    request.Ifname,
 			Sandbox: request.Netns}},
@@ -162,40 +156,6 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "exec error in namespace", err)
 	}
 
-	// add the veth device to ovs bridge
-	if err = s.ovsDriver.CreatePort(vethName, "", 0); err != nil {
-		klog.Errorf("create ovs port error, vethName: %s, err: %s", vethName, err)
-		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "add port to ovs bridge error", err)
-	}
-
-	// set externalID on the interface for arp learning
-	externalID := make(map[string]string)
-	externalID["attached-mac"] = result.Interfaces[0].Mac
-	externalID["pod-uuid"] = utils.EncodeNamespacedName(coretypes.NamespacedName{
-		Name:      "pod-" + string(args.K8S_POD_NAME),
-		Namespace: string(args.K8S_POD_NAMESPACE),
-	})
-	if err = s.ovsDriver.UpdateInterface(vethName, externalID); err != nil {
-		klog.Errorf("set externalID for %s error, err: %s", vethName, err)
-		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "set externalID for %s error", err)
-	}
-
-	// broadcast arp pkg in namespace
-	// pod-endpoint may not sync when sending arp, so this part may not have effects.
-	if err = ns.WithNetNSPath(nsPath, func(hostNS ns.NetNS) error {
-		for index := range result.IPs {
-			err = arping.GratuitousArpOverIfaceByName(result.IPs[index].Address.IP,
-				result.Interfaces[*result.IPs[index].Interface].Name)
-			if err != nil {
-				klog.Errorf("get error while arping, err: %s\n", err)
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
-		klog.Errorf("exec in namespace error, err: %s", err)
-	}
-
 	return s.ParseResult(result)
 }
 
@@ -205,61 +165,13 @@ func (s *CNIServer) CmdCheck(ctx context.Context, request *cnipb.CniRequest) (*c
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	conf, _, err := s.ParseConf(request)
-	if err != nil {
-		klog.Errorf("failed to decode request, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_DECODING_FAILURE, "failed to decode request", err)
-	}
-
-	vethName := "_" + request.ContainerId[:12]
-
-	// check ovs port
-	if !s.ovsDriver.IsPortNamePresent(vethName) {
-		klog.Errorf("ovs port does not exist, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "ovs port does not exist", err)
-	}
-
-	// require ipam for a new ip address
-	SetEnv(request)
-	err = ipam.ExecCheck("host-local", s.GetIpamConfByte(conf))
-	if err != nil {
-		klog.Errorf("ipam check error, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "ipam check error", err)
-	}
-
 	return &cnipb.CniResponse{Result: []byte("")}, nil
 }
 
 func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
 	klog.Infof("Delete pod %s", request)
 
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	conf, _, err := s.ParseConf(request)
-	if err != nil {
-		klog.Errorf("Parse request conf error, err: %s", err)
-		return s.RetError(cnipb.ErrorCode_DECODING_FAILURE, "Parse request conf error", err)
-	}
-
-	vethName := "_" + request.ContainerId[:12]
-
-	// delete ovs port
-	if s.ovsDriver.IsPortNamePresent(vethName) {
-		if err = s.ovsDriver.DeletePort(vethName); err != nil {
-			klog.Errorf("delete ovs port %s error, err: %s", vethName, err)
-			return s.RetError(cnipb.ErrorCode_IO_FAILURE, "delete ovs port error", err)
-		}
-	}
-
-	// release allocated IP
-	SetEnv(request)
-	if err = ipam.ExecDel("host-local", s.GetIpamConfByte(conf)); err != nil {
-		klog.Errorf("release ip error, ipam conf: %s, err: %s", conf.IPAM, err)
-		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "release ip error", err)
-	}
-
-	return s.ParseResult(&cniv1.Result{CNIVersion: conf.CNIVersion})
+	return &cnipb.CniResponse{Result: []byte("")}, nil
 }
 
 func (s *CNIServer) RetError(code cnipb.ErrorCode, msg string, err error) (*cnipb.CniResponse, error) {
@@ -327,14 +239,6 @@ func Initialize(k8sClient client.Client, datapathManager *datapath.DpManager) *C
 		gwName:    datapathManager.AgentInfo.GatewayName,
 		ovsDriver: datapathManager.OvsdbDriverMap[datapathManager.AgentInfo.BridgeName][datapath.LOCAL_BRIDGE_KEYWORD],
 		podCIDR:   append([]cnitypes.IPNet{}, datapathManager.AgentInfo.PodCIDR...),
-	}
-
-	// set gateway ip address, first ip in first CIDR
-	if err := SetLinkAddr(s.gwName,
-		&net.IPNet{
-			IP:   datapathManager.AgentInfo.GatewayIP,
-			Mask: s.podCIDR[0].Mask}); err != nil {
-		klog.Errorf("set gateway ip address error, err:%s", err)
 	}
 
 	return s

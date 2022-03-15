@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	cnitypes "github.com/containernetworking/cni/pkg/types"
-	"github.com/containernetworking/plugins/pkg/ip"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
@@ -32,7 +31,6 @@ import (
 
 	"github.com/everoute/everoute/pkg/agent/datapath"
 	"github.com/everoute/everoute/pkg/constants"
-	"github.com/everoute/everoute/pkg/utils"
 )
 
 const agentConfigFilePath = "/var/lib/everoute/agentconfig.yaml"
@@ -131,6 +129,7 @@ func setAgentConf(datapathManager *datapath.DpManager, k8sReader client.Reader) 
 		klog.Fatalf("Service cluster CIDR should be specified when setup kubernetes cluster. E.g. `kubeadm init --service-cidr 10.244.0.0/16`")
 	}
 
+	/*
 	for bridge := range datapathManager.OvsdbDriverMap {
 		agentInfo.BridgeName = datapathManager.OvsdbDriverMap[bridge][datapath.LOCAL_BRIDGE_KEYWORD].OvsBridgeName
 		agentInfo.GatewayName = agentInfo.BridgeName + "-gw"
@@ -155,4 +154,6 @@ func setAgentConf(datapathManager *datapath.DpManager, k8sReader client.Reader) 
 	agentInfo.LocalGwMac = localGwMac
 	agentInfo.GatewayIP = ip.NextIP(agentInfo.PodCIDR[0].IP)
 	agentInfo.GatewayMac = GwMac
+
+	 */
 }

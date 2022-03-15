@@ -32,7 +32,6 @@ import (
 	"github.com/everoute/everoute/pkg/agent/cniserver"
 	"github.com/everoute/everoute/pkg/agent/controller/policy"
 	"github.com/everoute/everoute/pkg/agent/datapath"
-	"github.com/everoute/everoute/pkg/agent/proxy"
 	clientsetscheme "github.com/everoute/everoute/pkg/client/clientset_generated/clientset/scheme"
 	"github.com/everoute/everoute/pkg/constants"
 	"github.com/everoute/everoute/pkg/exporter"
@@ -104,7 +103,7 @@ func main() {
 		go cniServer.Run(stopChan)
 	}
 
-	datapathManager.InitializeCNI()
+	//datapathManager.InitializeCNI()
 
 	if err = startManager(mgr, datapathManager, stopChan); err != nil {
 		klog.Fatalf("error %v when start controller manager.", err)
@@ -151,6 +150,7 @@ func startManager(mgr manager.Manager, datapathManager *datapath.DpManager, stop
 		klog.Fatalf("unable to create policy controller: %s", err.Error())
 	}
 
+	/*
 	if enableCNI {
 		if err = (&proxy.NodeReconciler{
 			Client:          mgr.GetClient(),
@@ -161,7 +161,7 @@ func startManager(mgr manager.Manager, datapathManager *datapath.DpManager, stop
 			klog.Errorf("unable to create node controller: %s", err.Error())
 			return err
 		}
-	}
+	}*/
 
 	klog.Info("starting manager")
 	go func() {
