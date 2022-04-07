@@ -57,7 +57,7 @@ spec:
       securityContext: {}
       containers:
         - name: init-agent
-          command: [ "init_agent" ]
+          command: ["init_agent"]
           image: everoute/release
           imagePullPolicy: IfNotPresent
           lifecycle:
@@ -168,7 +168,3 @@ spec:
         - hostPath:
             path: /lib/modules
           name: host-lib-modules
-        - hostPath:
-            path: /run/xtables.lock
-            type: FileOrCreate
-          name: xtables-lock

@@ -19,9 +19,12 @@ package cniserver
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"sync"
 
 	cnitypes "github.com/containernetworking/cni/pkg/types"
@@ -32,6 +35,7 @@ import (
 	"github.com/containernetworking/plugins/plugins/ipam/host-local/backend/allocator"
 	"github.com/contiv/ofnet/ovsdbDriver"
 	"github.com/vishvananda/netlink"
+	"golang.org/x/sys/unix"
 	"google.golang.org/grpc"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,11 +46,16 @@ import (
 
 const CNISocketAddr = "/var/run/everoute/cni.sock"
 
+const (
+	vethPrefix    = "veth"
+	vrfPrefix     = "vrf"
+	dataIfaceName = "ens4"
+)
+
 type CNIServer struct {
 	k8sClient client.Client
 	ovsDriver *ovsdbDriver.OvsDriver
 	gwName    string
-	brName    string
 	podCIDR   []cnitypes.IPNet
 
 	mutex sync.Mutex
@@ -111,8 +120,6 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 
 	// create cni result structure
 	ipA, ipNet, _ := net.ParseCIDR(string(args.K8S_POD_NAME) + "/20")
-	klog.Info(ipA)
-	klog.Info(ipNet)
 	result := &cniv1.Result{
 		CNIVersion: conf.CNIVersion,
 		IPs: []*cniv1.IPConfig{{
@@ -120,14 +127,14 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 				IP:   ipA,
 				Mask: ipNet.Mask,
 			},
-			Gateway: net.ParseIP("192.168.16.1"),
+			Gateway: net.ParseIP("192.168.64.1"),
 		},
 		},
 		Routes: []*cnitypes.Route{{
 			Dst: net.IPNet{
 				IP:   net.IPv4zero,
 				Mask: net.IPMask(net.IPv4zero)},
-			GW: net.ParseIP("192.168.16.1")}},
+			GW: net.ParseIP("192.168.64.1")}},
 		Interfaces: []*cniv1.Interface{{
 			Name:    request.Ifname,
 			Sandbox: request.Netns}},
@@ -137,7 +144,8 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 
 	nsPath := "/host" + request.Netns
 	// vethName - ovs port name
-	vethName := "_" + request.ContainerId[:12]
+	vethBase := uuidToNum(request.ContainerId)
+	vethName := fmt.Sprintf("%s%d", vethPrefix, vethBase)
 	if err = ns.WithNetNSPath(nsPath, func(hostNS ns.NetNS) error {
 		// create veth pair in container NS and host NS
 		// TODO: MTU is a const variable here
@@ -156,7 +164,142 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniRequest) (*cni
 		return s.RetError(cnipb.ErrorCode_IO_FAILURE, "exec error in namespace", err)
 	}
 
+	// Generate vrfID from vethBase
+	vrfID := vethBase
+
+	// Create Vrf
+	vrfName := fmt.Sprintf("%s%d", vrfPrefix, vrfID)
+	vrf := &netlink.Vrf{
+		LinkAttrs: netlink.LinkAttrs{
+			Name: vrfName,
+		},
+		Table: vrfID,
+	}
+	netlink.LinkAdd(vrf)
+
+	// Get uplink and vethpair by name
+	uplink, _ := netlink.LinkByName(dataIfaceName)
+	vethlink, _ := netlink.LinkByName(vethName)
+
+	// Create MacVlan Inferface and Master to vrf
+	podMac, _ := net.ParseMAC(result.Interfaces[0].Mac)
+	macVlan := &netlink.Macvlan{
+		LinkAttrs: netlink.LinkAttrs{
+
+			Name:         fmt.Sprintf("%s.%d", dataIfaceName, vethBase),
+			ParentIndex:  uplink.Attrs().Index,
+			MasterIndex:  vrf.Index,
+			HardwareAddr: podMac,
+		},
+		Mode: netlink.MACVLAN_MODE_VEPA,
+	}
+	netlink.LinkAdd(macVlan)
+
+	// Master veth pair to vrf
+	netlink.LinkSetMaster(vethlink, vrf)
+
+	// Set links up
+	netlink.LinkSetUp(macVlan)
+	netlink.LinkSetUp(vrf)
+
+	// Set IP address
+	netlink.AddrAdd(macVlan, &netlink.Addr{
+		IPNet: &result.IPs[0].Address,
+	})
+	fakeAddr, _ := netlink.ParseAddr("100.100.1.1/24")
+	netlink.AddrAdd(vethlink, fakeAddr)
+
+	// Set sysCtl
+	cmd := "echo 1 > /host/proc/sys/net/ipv4/conf/" + vethName + "/proxy_arp"
+	exec.Command("/usr/bin/env", "bash", "-c", cmd).Run()
+
+	cmd = "echo 0 > /host/proc/sys/net/ipv4/conf/" + vethName + "/rp_filter"
+	exec.Command("/usr/bin/env", "bash", "-c", cmd).Run()
+
+	cmd = "echo 1 > /host/proc/sys/net/ipv4/conf/" + vethName + "/accept_local"
+	exec.Command("/usr/bin/env", "bash", "-c", cmd).Run()
+
+	cmd = "echo 1 > /host/proc/sys/net/ipv4/conf/" + macVlan.Name + "/proxy_arp"
+	exec.Command("/usr/bin/env", "bash", "-c", cmd).Run()
+
+	// Set arptables
+	cmd = "num=`arptables -L INPUT | grep \"i " + macVlan.Name + "\" | grep ACCEPT | wc -l`;[[ $num -eq 0 ]] " +
+		"&& arptables -I INPUT 1 -j ACCEPT -i " + macVlan.Name + " -d " + ipA.String()
+	exec.Command("/usr/bin/env", "bash", "-c", cmd).Run()
+
+	// Clean route table item
+	routes, err := netlink.RouteListFiltered(unix.AF_INET, &netlink.Route{Table: int(vrfID)}, netlink.RT_FILTER_TABLE)
+	if err != nil {
+		fmt.Print(err)
+	}
+	for _, item := range routes {
+		netlink.RouteDel(&item)
+	}
+
+	// Route for same network
+	if err := netlink.RouteAdd(&netlink.Route{
+		Dst:       ipNet,
+		LinkIndex: macVlan.Index,
+		Table:     int(vrfID),
+		Scope:     netlink.SCOPE_LINK,
+	}); err != nil {
+		fmt.Print(err)
+	}
+
+	// Route for default
+	if err := netlink.RouteAdd(&netlink.Route{
+		Dst:       nil,
+		Gw:        net.ParseIP("192.168.64.215"),
+		LinkIndex: macVlan.Index,
+		Table:     int(vrfID),
+	}); err != nil {
+		fmt.Print(err)
+	}
+
+	// Route for back to pod
+	if err := netlink.RouteAdd(&netlink.Route{
+		Scope: netlink.SCOPE_LINK,
+		Dst: &net.IPNet{
+			IP:   ipA.To4(),
+			Mask: net.IPMask(net.IPv4bcast.To4()),
+		},
+		LinkIndex: vethlink.Attrs().Index,
+		Table:     int(vrfID),
+	}); err != nil {
+		fmt.Print(err)
+	}
+
 	return s.ParseResult(result)
+}
+
+func Ipv4HostToInt(ipNet net.IPNet) uint32 {
+	ipAddr := binary.BigEndian.Uint32(ipNet.IP.To4())
+	ipMask := binary.BigEndian.Uint32(ipNet.Mask)
+	ipMaskR := ^ipMask
+
+	ipHost := ipAddr & ipMaskR
+
+	return ipHost
+}
+
+func uuidToNum(uuid string) uint32 {
+	// return value lead with 1
+	var ret uint32 = 1
+
+	count := 0
+
+	for _, char := range uuid {
+		if count == 8 {
+			break
+		}
+		num := int32(char - '0')
+		if num >= 0 && num <= 9 {
+			ret = ret*10 + uint32(num)
+			count++
+		}
+	}
+
+	return ret
 }
 
 func (s *CNIServer) CmdCheck(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
@@ -170,6 +313,28 @@ func (s *CNIServer) CmdCheck(ctx context.Context, request *cnipb.CniRequest) (*c
 
 func (s *CNIServer) CmdDel(ctx context.Context, request *cnipb.CniRequest) (*cnipb.CniResponse, error) {
 	klog.Infof("Delete pod %s", request)
+	klog.Info(request)
+
+	vethBase := uuidToNum(request.ContainerId)
+	vethName := fmt.Sprintf("%s%d", vethPrefix, vethBase)
+	vrfName := fmt.Sprintf("%s%d", vrfPrefix, vethBase)
+	macVlanName := fmt.Sprintf("%s.%d", dataIfaceName, vethBase)
+
+	if vethLink, err := netlink.LinkByName(vethName); err == nil {
+		netlink.LinkDel(vethLink)
+	}
+	if vrfLink, err := netlink.LinkByName(vrfName); err == nil {
+		netlink.LinkDel(vrfLink)
+	}
+	if macVlanLink, err := netlink.LinkByName(macVlanName); err == nil {
+		netlink.LinkDel(macVlanLink)
+	}
+
+	/*
+		vethBase := request.ContainerId[:10]
+		vethName := vethPrefix + vethBase
+		vrfID := Ipv4HostToInt(result.IPs[0].Address) + vrfOffset
+		vrfName:=fmt.Sprintf("%s%d", vrfPrefix, vrfID)*/
 
 	return &cnipb.CniResponse{Result: []byte("")}, nil
 }

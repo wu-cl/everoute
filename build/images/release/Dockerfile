@@ -29,8 +29,8 @@ FROM ubuntu:20.04
 #RUN apk update && apk add openvswitch
 RUN apt update && apt install -y openvswitch-switch=2.13.* iptables iproute2 tcpdump && rm -rf /var/lib/apt/lists/*
 
-# replace iptables-legacy with iptables-nft
-RUN ln -s -f /usr/sbin/iptables-nft /etc/alternatives/iptables
+# Automatically detect iptables mode (legacy or nf_tables) from baseOS
+RUN ln -s -f /opt/everoute/bin/iptables-wrapper /etc/alternatives/iptables
 
 RUN mkdir -p /opt/everoute/bin
 COPY --from=builder /opt/everoute/bin/* /opt/everoute/bin/

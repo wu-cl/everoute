@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: 192.168.16.19
+  labels:
+    app: nginx1
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: remote
+  containers:
+    - name: nginx1
+      securityContext:
+        privileged: true
+      image: nginx:alpine
+      ports:
+        - containerPort: 80

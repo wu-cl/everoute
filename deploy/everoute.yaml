@@ -1664,10 +1664,10 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: everoute-agent
-      priorityClassName: system-node-critical
+      securityContext: {}
       containers:
         - name: init-agent
-          command: [ "init_agent" ]
+          command: ["init_agent"]
           image: everoute/release
           imagePullPolicy: IfNotPresent
           lifecycle:
@@ -1731,8 +1731,6 @@ spec:
               mountPath: /opt/cni/bin/
             - name: everoute-ipam
               mountPath: /var/lib/cni/networks/everoute
-            - mountPath: /lib/modules
-              name: host-lib-modules
             - name: tmp
               mountPath: /tmp
             - name: xtables-lock
@@ -1780,10 +1778,6 @@ spec:
         - hostPath:
             path: /lib/modules
           name: host-lib-modules
-        - hostPath:
-            path: /run/xtables.lock
-            type: FileOrCreate
-          name: xtables-lock
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

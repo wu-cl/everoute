@@ -129,11 +129,41 @@ echo 0 > /proc/sys/net/ipv4/conf/${GW_LOCAL_IFACE}/rp_filter
 
 echo 0 > /proc/sys/net/ipv4/ip_early_demux
 
-ip link add br0 type bridge
-ip link set eth1 master br0
-ip link set br0 up
-
 iptables -P FORWARD ACCEPT
+
+# init ecp
+
+iptables -t raw -C PREROUTING -i  ens4.+ -j CT --notrack
+if [ $? != 0 ]; then
+    echo "exec iptables -t raw -A PREROUTING -i  ens4.+ -j CT --notrack"
+    iptables -t raw -A PREROUTING -i  ens4.+ -j CT --notrack
+fi
+
+iptables -t raw -C PREROUTING -i  veth+ -j CT --notrack
+if [ $? != 0 ]; then
+    echo "exec iptables -t raw -A PREROUTING -i  veth+ -j CT --notrack"
+    iptables -t raw -A PREROUTING -i  veth+ -j CT --notrack
+fi
+
+num=`arptables -L INPUT | grep "i ens4." | grep "s 192.168.64.1" | wc -l`
+if [ $num == 0 ]; then
+    echo "exec arptables -I INPUT 1 -j ACCEPT -i ens4.+ -s 192.168.64.1"
+    arptables -I INPUT 1 -j ACCEPT -i ens4.+ -s 192.168.64.1
+fi
+
+num=`arptables -L INPUT | grep "i ens4." | grep "s 192.168.64.215" | wc -l`
+echo $num
+if [ $num == 0 ]; then
+    echo "exec arptables -I INPUT 1 -j ACCEPT -i ens4.+ -s 192.168.64.215"
+    arptables -I INPUT 1 -j ACCEPT -i ens4.+ -s 192.168.64.215
+fi
+
+num=`arptables -L INPUT | grep "i ens4." | grep "j DROP" | wc -l`
+echo $num
+if [ $num == 0 ]; then
+    echo "exec arptables -A INPUT -j DROP -i ens4.+"
+    arptables -A INPUT -j DROP -i ens4.+
+fi
 
 
 echo "finish init"
