@@ -15,6 +15,12 @@ rm -f /etc/cni/net.d/10-everoute.conf
 rm -f /etc/cni/net.d/10-everoute.conflist
 install -m 644 /var/lib/everoute/cni-conf.conflist /etc/cni/net.d/10-everoute.conflist
 
+# init iptables drivers
+modprobe iptable_nat
+modprobe iptable_filter
+modprobe iptable_raw
+modprobe iptable_mangle
+
 # init ovs
 echo "init ovs"
 modprobe openvswitch || (echo "modprobe openvswitch error"; exit 1)
@@ -67,7 +73,7 @@ UPLINK_TO_CLS_PATCH="uplink-to-cls"
 
 EVEROUTE_ROUTE_TABLE=100
 EVEROUTE_IP_RULE_PREF=100
-LOCAL_IP_RULE_PREF=200
+LOCAL_IP_RULE_PREF=30000
 
 
 DEFAULT_BRIDGE=`cat ${AGENT_CONFIG_PATH} | grep datapathConfig: -A1 | grep -v datapathConfig: | awk -F ':' '{print $1}' | awk '$1=$1'`
@@ -127,8 +133,6 @@ ip link add br0 type bridge
 ip link set eth1 master br0
 ip link set br0 up
 
-bridge link set dev eth1 learning off
-bridge link set dev eth1 learning_sync off
 iptables -P FORWARD ACCEPT
 
 

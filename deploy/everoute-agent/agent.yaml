@@ -85,6 +85,7 @@ spec:
               subPath: agentconfig.yaml
             - mountPath: /lib/modules
               name: host-lib-modules
+              readOnly: true
             - name: tmp
               mountPath: /tmp
         - name: everoute-agent
@@ -122,8 +123,8 @@ spec:
               mountPath: /var/lib/cni/networks/everoute
             - name: tmp
               mountPath: /tmp
-            - mountPath: /run/xtables.lock
-              name: xtables-lock
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -167,3 +168,7 @@ spec:
         - hostPath:
             path: /lib/modules
           name: host-lib-modules
+        - hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+          name: xtables-lock
