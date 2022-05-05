@@ -18,6 +18,7 @@ package proxy
 
 import (
 	"net"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -25,6 +26,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func TestProxy(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Test Proxy")
+}
 
 var _ = Describe("Test route.go", func() {
 	var node1 *corev1.Node
@@ -80,13 +86,13 @@ var _ = Describe("Test route.go", func() {
 
 	It("Test GetNodeInternalIP", func() {
 		ret := GetNodeInternalIP(*node1)
-		Expect(ret).Should(Equal("192.168.1.1"))
+		Expect(ret.String()).Should(Equal("192.168.1.1"))
 	})
 
 	It("Test RouteEqual", func() {
-		Expect(RouteEqual(route1, route2)).Should(BeTrue())
+		Expect(RouteEqual(route1, route2)).Should(BeFalse())
 		Expect(RouteEqual(route1, route3)).Should(BeFalse())
-		Expect(RouteEqual(route1, route4)).Should(BeFalse())
+		Expect(RouteEqual(route1, route4)).Should(BeTrue())
 		Expect(RouteEqual(route1, route5)).Should(BeFalse())
 	})
 

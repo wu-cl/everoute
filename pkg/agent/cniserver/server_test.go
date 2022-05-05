@@ -17,7 +17,9 @@ limitations under the License.
 package cniserver
 
 import (
+	"net"
 	"os"
+	"testing"
 
 	"github.com/containernetworking/cni/pkg/types"
 	cniv1 "github.com/containernetworking/cni/pkg/types/100"
@@ -26,6 +28,11 @@ import (
 
 	cnipb "github.com/everoute/everoute/pkg/apis/cni/v1alpha1"
 )
+
+func TestProxy(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Test Proxy")
+}
 
 var _ = Describe("Test cniserver", func() {
 	s := &CNIServer{}
@@ -37,10 +44,10 @@ var _ = Describe("Test cniserver", func() {
 			Args:        "K8S_POD_NAME=123;K8S_POD_NAMESPACE=456;K8S_POD_INFRA_CONTAINER_ID=789",
 			Path:        "path",
 			Stdin: []byte("{\n  \"cniVersion\": \"1.0.0\",\n  \"name\": \"test\",\n  \"plugins\": [\n    {\n      " +
-				"\"type\": \"bridge\",\n      // plugin specific parameters\n      \"bridge\": \"cni0\",\n      " +
+				"\"type\": \"bridge\",\n    \"bridge\": \"cni0\",\n      " +
 				"\"keyA\": [\"some more\", \"plugin specific\", \"configuration\"],\n      \n      \"ipam\": {\n      " +
-				"  \"type\": \"host-local\",\n        // ipam specific\n        \"subnet\": \"10.1.0.0/16\",\n       " +
-				" \"gateway\": \"10.1.0.1\",\n        \"routes\": [\n            {\"dst\": \"0.0.0.0/0\"}\n        ]\n " +
+				"  \"type\": \"host-local\",\n   \"subnet\": \"10.1.0.0/16\",\n       " +
+				" \"gateway\": \"10.1.0.1\",\n       \"routes\": [\n            {\"dst\": \"0.0.0.0/0\"}\n        ]\n " +
 				"     },\n      \"dns\": {\n        \"nameservers\": [ \"10.1.0.1\" ]\n      }\n    },\n    {\n     " +
 				" \"type\": \"tuning\",\n      \"capabilities\": {\n        \"mac\": true\n      },\n     " +
 				" \"sysctl\": {\n        \"net.core.somaxconn\": \"500\"\n      }\n    },\n    {\n        " +
@@ -49,15 +56,20 @@ var _ = Describe("Test cniserver", func() {
 		conf, args, err := s.ParseConf(request)
 		Expect(err).Should(Succeed())
 		Expect(conf.CNIVersion).Should(Equal("1.0.0"))
-		Expect(args.K8S_POD_NAMESPACE).Should(Equal("123"))
+		Expect(string(args.K8S_POD_NAME)).Should(Equal("123"))
+		Expect(string(args.K8S_POD_NAMESPACE)).Should(Equal("456"))
 	})
 	It("Test Parse Result", func() {
 		result := &cniv1.Result{
 			CNIVersion: "",
 			Interfaces: nil,
-			IPs:        nil,
-			Routes:     nil,
-			DNS:        types.DNS{},
+			IPs: []*cniv1.IPConfig{
+				{
+					Address: net.IPNet{},
+				},
+			},
+			Routes: nil,
+			DNS:    types.DNS{},
 		}
 		_, err := s.ParseResult(result)
 		Expect(err).Should(Succeed())
@@ -70,22 +82,9 @@ var _ = Describe("Test cniserver", func() {
 			Path:        "44",
 		}
 		SetEnv(req)
-		Expect(os.Getenv("CNI_CONTAINERID")).Should(Equal(11))
-		Expect(os.Getenv("CNI_NETNS")).Should(Equal(22))
-		Expect(os.Getenv("CNI_IFNAME")).Should(Equal(33))
-		Expect(os.Getenv("CNI_PATH")).Should(Equal(44))
-	})
-	It("Test SetEnv", func() {
-		req := &cnipb.CniRequest{
-			ContainerId: "11",
-			Netns:       "22",
-			Ifname:      "33",
-			Path:        "44",
-		}
-		SetEnv(req)
-		Expect(os.Getenv("CNI_CONTAINERID")).Should(Equal(11))
-		Expect(os.Getenv("CNI_NETNS")).Should(Equal(22))
-		Expect(os.Getenv("CNI_IFNAME")).Should(Equal(33))
-		Expect(os.Getenv("CNI_PATH")).Should(Equal(44))
+		Expect(os.Getenv("CNI_CONTAINERID")).Should(Equal("11"))
+		Expect(os.Getenv("CNI_NETNS")).Should(Equal("22"))
+		Expect(os.Getenv("CNI_IFNAME")).Should(Equal("33"))
+		Expect(os.Getenv("CNI_PATH")).Should(Equal("44"))
 	})
 })
