@@ -938,7 +938,7 @@ func CleanConntrackFlow(rule *EveroutePolicyRule) {
 		args = append(args, "-d", rule.DstIPAddr)
 	}
 	if rule.IPProtocol != 0 {
-		args = []string{"-p", strconv.Itoa(int(rule.IPProtocol))}
+		args = append(args, "-p", strconv.Itoa(int(rule.IPProtocol)))
 	}
 	if rule.IPProtocol == protocol.Type_TCP || rule.IPProtocol == protocol.Type_UDP {
 		if rule.SrcPort != 0 {

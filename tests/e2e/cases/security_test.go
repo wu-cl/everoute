@@ -19,6 +19,7 @@ package cases
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/klog"
 
 	securityv1alpha1 "github.com/everoute/everoute/pkg/apis/security/v1alpha1"
 	"github.com/everoute/everoute/pkg/constants"
@@ -40,6 +42,7 @@ import (
 var _ = Describe("SecurityPolicy", func() {
 	AfterEach(func() {
 		Expect(e2eEnv.ResetResource(ctx)).Should(Succeed())
+		Expect(cleanConntrack()).Should(Succeed())
 	})
 
 	// This case test policy with tcp and icmp can works. We setup three groups of vms (nginx/webserver/database), create
@@ -71,7 +74,26 @@ var _ = Describe("SecurityPolicy", func() {
 
 			Expect(e2eEnv.EndpointManager().SetupMany(ctx, nginx, server01, server02, db01, db02, client)).Should(Succeed())
 		})
+		/*
+			It("should clean exist connection after adding policy", func() {
+				assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{db01}, "TCP", true)
 
+				nginxPolicy := newPolicy("nginx-policy", constants.Tier2, securityv1alpha1.DefaultRuleDrop, nginxSelector)
+				addEngressRule(nginxPolicy, "TCP", serverPort, serverSelector)
+
+				Eventually(func() bool {
+					return checkConntrackExist("TCP", nginx.Status.IPAddr, db01.Status.IPAddr, 0, 0)
+				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeTrue())
+
+				Expect(e2eEnv.SetupObjects(ctx, nginxPolicy)).Should(Succeed())
+
+				Eventually(func() bool {
+					return checkConntrackExist("TCP", nginx.Status.IPAddr, db01.Status.IPAddr, 0, 0)
+				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
+
+				Expect(true).Should(BeFalse())
+			})
+		*/
 		When("limits tcp packets between components", func() {
 			var nginxPolicy, serverPolicy, dbPolicy *securityv1alpha1.SecurityPolicy
 
@@ -103,6 +125,16 @@ var _ = Describe("SecurityPolicy", func() {
 				assertReachable([]*model.Endpoint{client}, []*model.Endpoint{nginx}, "TCP", true)
 				assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{server01, server02}, "TCP", true)
 				assertReachable([]*model.Endpoint{server01, server02, db01, db02}, []*model.Endpoint{db01, db02}, "TCP", true)
+			})
+
+			It("should clean exist allow connection after deleting policy", func() {
+				assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{server01}, "TCP", true)
+
+				Expect(e2eEnv.ResetResource(ctx)).Should(Succeed())
+
+				Eventually(func() bool {
+					return checkConntrackExist("TCP", strings.Split(nginx.Status.IPAddr, "/")[0], strings.Split(server01.Status.IPAddr, "/")[0], 0, 0)
+				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
 			})
 
 			When("add endpoint into the database group", func() {
@@ -718,6 +750,37 @@ var _ = Describe("GlobalPolicy", func() {
 
 	})
 })
+
+func checkConntrackExist(proto, srcIP, dstIP string, srcPort, dstPort uint16) bool {
+	args := []string{"-L"}
+
+	if srcIP != "" {
+		args = append(args, "-s", srcIP)
+	}
+	if dstIP != "" {
+		args = append(args, "-d", dstIP)
+	}
+	args = append(args, "-p", proto)
+
+	if proto == "TCP" || proto == "UDP" {
+		if srcPort != 0 {
+			args = append(args, "--sport", strconv.Itoa(int(srcPort)))
+		}
+		if dstPort != 0 {
+			args = append(args, "--dport", strconv.Itoa(int(dstPort)))
+		}
+	}
+	klog.Infoln(args)
+	out, err := exec.Command("conntrack", args...).CombinedOutput()
+	itemArr := strings.Split(string(out), "\n")
+	klog.Infoln(itemArr[len(itemArr)-1])
+
+	return err == nil
+}
+
+func cleanConntrack() error {
+	return exec.Command("conntrack", "-F").Run()
+}
 
 func newSelector(selector map[string]string) *metav1.LabelSelector {
 	return &metav1.LabelSelector{
