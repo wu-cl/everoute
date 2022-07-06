@@ -17,9 +17,11 @@ limitations under the License.
 package cases
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -74,26 +76,24 @@ var _ = Describe("SecurityPolicy", func() {
 
 			Expect(e2eEnv.EndpointManager().SetupMany(ctx, nginx, server01, server02, db01, db02, client)).Should(Succeed())
 		})
-		/*
-			It("should clean exist connection after adding policy", func() {
-				assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{db01}, "TCP", true)
 
-				nginxPolicy := newPolicy("nginx-policy", constants.Tier2, securityv1alpha1.DefaultRuleDrop, nginxSelector)
-				addEngressRule(nginxPolicy, "TCP", serverPort, serverSelector)
+		It("should clean exist connection after adding drop policy", func() {
+			assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{db01}, "TCP", true)
 
-				Eventually(func() bool {
-					return checkConntrackExist("TCP", nginx.Status.IPAddr, db01.Status.IPAddr, 0, 0)
-				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeTrue())
+			nginxPolicy := newPolicy("nginx-policy", constants.Tier2, securityv1alpha1.DefaultRuleDrop, nginxSelector)
+			addEngressRule(nginxPolicy, "TCP", serverPort, serverSelector)
 
-				Expect(e2eEnv.SetupObjects(ctx, nginxPolicy)).Should(Succeed())
+			Eventually(func() bool {
+				return checkConntrackExist("TCP", strings.Split(nginx.Status.IPAddr, "/")[0], strings.Split(db01.Status.IPAddr, "/")[0], 0, 0)
+			}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeTrue())
 
-				Eventually(func() bool {
-					return checkConntrackExist("TCP", nginx.Status.IPAddr, db01.Status.IPAddr, 0, 0)
-				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
+			Expect(e2eEnv.SetupObjects(ctx, nginxPolicy)).Should(Succeed())
 
-				Expect(true).Should(BeFalse())
-			})
-		*/
+			Eventually(func() bool {
+				return checkConntrackExist("TCP", strings.Split(nginx.Status.IPAddr, "/")[0], strings.Split(db01.Status.IPAddr, "/")[0], 0, 0)
+			}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
+		})
+
 		When("limits tcp packets between components", func() {
 			var nginxPolicy, serverPolicy, dbPolicy *securityv1alpha1.SecurityPolicy
 
@@ -135,6 +135,19 @@ var _ = Describe("SecurityPolicy", func() {
 				Eventually(func() bool {
 					return checkConntrackExist("TCP", strings.Split(nginx.Status.IPAddr, "/")[0], strings.Split(server01.Status.IPAddr, "/")[0], 0, 0)
 				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
+			})
+
+			It("should keep exist allow connection after adding new allow policy", func() {
+				assertReachable([]*model.Endpoint{nginx}, []*model.Endpoint{server01}, "TCP", true)
+
+				ngxinDBPolicy := newPolicy("nginx-db-policy", constants.Tier2, securityv1alpha1.DefaultRuleDrop, nginxSelector)
+				addEngressRule(ngxinDBPolicy, "TCP", dbPort, dbSelector)
+
+				Expect(e2eEnv.SetupObjects(ctx, ngxinDBPolicy)).Should(Succeed())
+
+				Eventually(func() bool {
+					return checkConntrackExist("TCP", strings.Split(nginx.Status.IPAddr, "/")[0], strings.Split(server01.Status.IPAddr, "/")[0], 0, 0)
+				}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeTrue())
 			})
 
 			When("add endpoint into the database group", func() {
@@ -636,6 +649,25 @@ var _ = Describe("GlobalPolicy", func() {
 			assertMatchReachTable("TCP", tcpPort, expectedTruthTable)
 		})
 
+		It("should clean exist allow connection add global drop policy", func() {
+			securityModel := &SecurityModel{
+				Endpoints: []*model.Endpoint{endpointA, endpointB, endpointC},
+			}
+			By("verify reachable between endpoints")
+			expectedTruthTable := securityModel.NewEmptyTruthTable(true)
+			assertMatchReachTable("TCP", tcpPort, expectedTruthTable)
+
+			Eventually(func() bool {
+				return checkConntrackExist("TCP", strings.Split(endpointA.Status.IPAddr, "/")[0], strings.Split(endpointB.Status.IPAddr, "/")[0], 0, 0)
+			}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeTrue())
+
+			Expect(e2eEnv.GlobalPolicyProvider().SetDefaultAction(ctx, securityv1alpha1.GlobalDefaultActionDrop)).Should(Succeed())
+
+			Eventually(func() bool {
+				return checkConntrackExist("TCP", strings.Split(endpointA.Status.IPAddr, "/")[0], strings.Split(endpointB.Status.IPAddr, "/")[0], 0, 0)
+			}, e2eEnv.Timeout(), e2eEnv.Interval()).Should(BeFalse())
+		})
+
 		When("update global default action to drop", func() {
 			BeforeEach(func() {
 				// drop all traffics between endpoints
@@ -770,12 +802,17 @@ func checkConntrackExist(proto, srcIP, dstIP string, srcPort, dstPort uint16) bo
 			args = append(args, "--dport", strconv.Itoa(int(dstPort)))
 		}
 	}
-	klog.Infoln(args)
-	out, err := exec.Command("conntrack", args...).CombinedOutput()
-	itemArr := strings.Split(string(out), "\n")
-	klog.Infoln(itemArr[len(itemArr)-1])
 
-	return err == nil
+	var b bytes.Buffer
+	cmd := exec.Command("conntrack", args...)
+	cmd.Stderr = &b
+	cmd.Run()
+	out := strings.TrimSpace(b.String())
+
+	reg, _ := regexp.Compile(": (.+?) flow entries")
+	flowCount, _ := strconv.Atoi(strings.TrimSpace(reg.FindStringSubmatch(out)[1]))
+	klog.Infof("checkConntrackExist find %d flows with %s", flowCount, args)
+	return flowCount != 0
 }
 
 func cleanConntrack() error {
