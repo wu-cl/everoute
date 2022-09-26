@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
       - id: get_version
