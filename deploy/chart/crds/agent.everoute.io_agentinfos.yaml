@@ -9,6 +9,10 @@ metadata:
   name: agentinfos.agent.everoute.io
 spec:
   group: agent.everoute.io
+  group: agent.everoute.io
+  group: agent.everoute.io
+  group: agent.everoute.io
+  group: agent.everoute.io
   names:
     kind: AgentInfo
     listKind: AgentInfoList
