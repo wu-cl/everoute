@@ -121,7 +121,9 @@ func (r *Reconciler) ReconcilePatch(req ctrl.Request) (ctrl.Result, error) {
 
 	r.groupCache.ApplyPatch(patch)
 
-	if r.groupCache.PatchLen(groupName) != 0 {
+	cacheLen := r.groupCache.PatchLen(groupName)
+	if cacheLen != 0 {
+		klog.Infof("############ requeue, cache len = %d", cacheLen)
 		requeue = true
 	}
 

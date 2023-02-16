@@ -193,9 +193,18 @@ func (cache *GroupCache) ApplyPatch(patch *GroupPatch) {
 
 // PatchLen return patches length of the giving group.
 func (cache *GroupCache) PatchLen(groupName string) int {
+	klog.Infoln("1111111111######")
+	klog.Infoln(groupName)
 	cache.lock.RLock()
+	klog.Infoln("2222222222222######")
+	klog.Infoln(groupName)
 	defer cache.lock.RUnlock()
-	return len(cache.patches[groupName])
+	klog.Infoln("333333333333######")
+	klog.Infoln(groupName)
+	lenn := len(cache.patches[groupName])
+	klog.Infoln("4444444444######")
+	klog.Infoln(lenn)
+	return lenn
 }
 
 // AddGroupMembership add GroupMembers to cache.
