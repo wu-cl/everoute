@@ -1,6 +1,9 @@
 CONTROLLER_GEN=$(shell which controller-gen)
 APISERVER_BOOT=$(shell which apiserver-boot)
 
+# ttttt
+# TTTTT
+
 bin: controller agent cni erctl
 
 images: image image-generate
