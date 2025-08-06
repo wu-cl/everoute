@@ -2460,7 +2460,7 @@ func getRuleByPolicy(policy *securityv1alpha1.SecurityPolicy) []cache.PolicyRule
 		if err != nil {
 			return nil
 		}
-		policyRuleList = append(policyRuleList, rule.GenerateRuleList(ctx, srcIPs, dstIPs, rule.Ports)...)
+		policyRuleList = append(policyRuleList, rule.GenerateRuleList(ctx, srcIPs, dstIPs, rule.Ports, pCtrl.GetGroupCache())...)
 	}
 	return policyRuleList
 }

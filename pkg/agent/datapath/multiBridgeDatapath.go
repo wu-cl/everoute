@@ -319,6 +319,7 @@ type Endpoint struct {
 	IPAddrMutex          sync.RWMutex
 	IPAddrLastUpdateTime time.Time
 	PortNo               uint32 // endpoint of port
+	IfaceID              string
 	MacAddrStr           string
 	VlanID               uint16 // endpoint vlan id
 	Trunk                string // vlan trunk config
@@ -621,6 +622,16 @@ func (dp *DpManager) GetBridgeIndexesWithFlowID(flowID uint64) []uint32 {
 		}
 	}
 	return bridgeIndexes
+}
+
+func (dp *DpManager) GetEndpointByIfaceID(ifaceID string) *Endpoint {
+	for endpointObj := range dp.localEndpointDB.IterBuffered() {
+		endpoint := endpointObj.Val.(*Endpoint)
+		if ifaceID == endpoint.IfaceID {
+			return endpoint
+		}
+	}
+	return nil
 }
 
 func (dp *DpManager) GetRulesByFlowIDs(flowIDs ...uint64) []*v1alpha1.RuleEntry {
@@ -1441,17 +1452,30 @@ func (dp *DpManager) RemoveEveroutePolicyRule(ctx context.Context, ruleID string
 
 	var errs []error
 	var delFlowIDs, resFlowIDs []uint64
+	var isSetForward = false
 	defer func() {
 		dp.releaseRuleSeqID(ctx, delFlowIDs, resFlowIDs)
 	}()
 	for vdsID := range dp.BridgeChainMap {
-		err := ofctrl.DeleteFlow(pRule.RuleFlowMap[vdsID].Table, pRule.RuleFlowMap[vdsID].Priority, pRule.RuleFlowMap[vdsID].FlowID)
+		var err error
+		if !isSetForward && pRule.RuleFlowMap[vdsID].DstVNicRef != "" {
+			ep := dp.GetEndpointByIfaceID(pRule.RuleFlowMap[vdsID].DstVNicRef)
+			if ep != nil && ep.PortNo != 0 {
+				err = SetPortForward(ep.BridgeName, int(ep.PortNo), true)
+			} else {
+				err = fmt.Errorf("fail to get ofport for vnic %s", pRule.RuleFlowMap[vdsID].DstVNicRef)
+			}
+			isSetForward = true
+		} else {
+			err = ofctrl.DeleteFlow(pRule.RuleFlowMap[vdsID].Table, pRule.RuleFlowMap[vdsID].Priority, pRule.RuleFlowMap[vdsID].FlowID)
+		}
 		if err != nil {
 			log.Error(err, "Failed to delete flow for rule", "vdsID", vdsID)
 			resFlowIDs = append(resFlowIDs, pRule.RuleFlowMap[vdsID].FlowID)
 			errs = append(errs, err)
 			continue
 		}
+
 		delFlowIDs = append(delFlowIDs, pRule.RuleFlowMap[vdsID].FlowID)
 		log.V(2).Info("Success to delete flow for rule", "vdsID", vdsID)
 		// remove flowID reference
@@ -1945,6 +1969,25 @@ func SetPortNoFlood(bridge string, ofport int) error {
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("fail to set no-flood config for port %d on bridge %s: %v, stderr: %s", ofport, bridge, err,
+			stderr.String())
+	}
+	return nil
+}
+
+func SetPortForward(bridge string, ofport int, forward bool) error {
+	var cmdStr string
+	if forward {
+		cmdStr = fmt.Sprintf("ovs-ofctl mod-port %s %d forward", bridge, ofport)
+	} else {
+		cmdStr = fmt.Sprintf("ovs-ofctl mod-port %s %d no-forward", bridge, ofport)
+	}
+	cmd := exec.Command("/bin/sh", "-c", cmdStr)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("fail to set forward %t config for port %d on bridge %s: %v, stderr: %s", forward, ofport, bridge, err,
 			stderr.String())
 	}
 	return nil

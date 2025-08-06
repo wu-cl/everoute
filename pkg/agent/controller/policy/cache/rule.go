@@ -43,6 +43,7 @@ const (
 	RuleTypeGlobalDefaultRule RuleType = "GlobalDefaultRule"
 	RuleTypeDefaultRule       RuleType = "DefaultRule"
 	RuleTypeNormalRule        RuleType = "NormalRule"
+	RuleTypeIsolationDropRule RuleType = "IsolationDropRule"
 
 	RuleActionAllow RuleAction = "Allow"
 	RuleActionDrop  RuleAction = "Drop"
@@ -79,6 +80,9 @@ type PolicyRule struct {
 	DstPortMask     uint16        `json:"dstPortMask,omitempty"`
 	IcmpType        uint8
 	IcmpTypeEnable  bool
+
+	SrcVNicRef string
+	DstVNicRef string
 }
 
 func (p *PolicyRule) DeepCopy() *PolicyRule {
@@ -101,6 +105,8 @@ func (p *PolicyRule) DeepCopy() *PolicyRule {
 		DstPortMask:     p.DstPortMask,
 		IcmpType:        p.IcmpType,
 		IcmpTypeEnable:  p.IcmpTypeEnable,
+		SrcVNicRef:      p.SrcVNicRef,
+		DstVNicRef:      p.DstVNicRef,
 	}
 }
 
@@ -232,10 +238,10 @@ func (rule *CompleteRule) ListRules(ctx context.Context, groupCache *GroupCache)
 	rule.lock.RLock()
 	defer rule.lock.RUnlock()
 
-	return rule.GenerateRuleList(ctx, rule.assemblySrcIPBlocks(ctx, groupCache), rule.assemblyDstIPBlocks(ctx, groupCache), rule.Ports)
+	return rule.GenerateRuleList(ctx, rule.assemblySrcIPBlocks(ctx, groupCache), rule.assemblyDstIPBlocks(ctx, groupCache), rule.Ports, groupCache)
 }
 
-func (rule *CompleteRule) GenerateRuleList(ctx context.Context, srcIPBlocks map[string]*IPBlockItem, dstIPBlocks map[string]*IPBlockItem, ports []RulePort) []PolicyRule {
+func (rule *CompleteRule) GenerateRuleList(ctx context.Context, srcIPBlocks map[string]*IPBlockItem, dstIPBlocks map[string]*IPBlockItem, ports []RulePort, groupCache *GroupCache) []PolicyRule {
 	log := ctrl.LoggerFrom(ctx)
 	var policyRuleList []PolicyRule
 
@@ -270,15 +276,33 @@ func (rule *CompleteRule) GenerateRuleList(ctx context.Context, srcIPBlocks map[
 					if rule.SymmetricMode {
 						// SymmetricMode will ignore rule direction, create both ingress and egress
 						if rule.hasLocalRule(dstIPBlock) {
-							policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, RuleDirectionIn, dstPort)...)
+							policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, RuleDirectionIn, dstPort, "", "")...)
 						}
 						if rule.hasLocalRule(srcIPBlock) {
-							policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, RuleDirectionOut, dstPort)...)
+							policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, RuleDirectionOut, dstPort, "", "")...)
 						}
 					} else if (rule.Direction == RuleDirectionIn && rule.hasLocalRule(dstIPBlock)) ||
 						(rule.Direction == RuleDirectionOut && rule.hasLocalRule(srcIPBlock)) {
-						policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, rule.Direction, dstPort)...)
+						policyRuleList = append(policyRuleList, rule.generateRule(srcIP, dstIP, rule.Direction, dstPort, "", "")...)
 					}
+				}
+			}
+		}
+	}
+
+	// genereate full isolation rule for vnic
+	if RuleType(rule.Tier) == constants.Tier0 {
+		switch rule.Direction {
+		case RuleDirectionIn:
+			for group := range rule.DstGroups {
+				for _, vnic := range groupCache.ListGroupVNics(ctx, group) {
+					policyRuleList = append(policyRuleList, rule.generateRule("", "", rule.Direction, RulePort{}, "", vnic)...)
+				}
+			}
+		case RuleDirectionOut:
+			for group := range rule.SrcGroups {
+				for _, vnic := range groupCache.ListGroupVNics(ctx, group) {
+					policyRuleList = append(policyRuleList, rule.generateRule("", "", rule.Direction, RulePort{}, vnic, "")...)
 				}
 			}
 		}
@@ -315,10 +339,13 @@ func (rule *CompleteRule) hasLocalRule(ipBlock *IPBlockItem) bool {
 	return false
 }
 
-func (rule *CompleteRule) generateRule(srcIPBlock, dstIPBlock string, direction RuleDirection, port RulePort) []PolicyRule {
+func (rule *CompleteRule) generateRule(srcIPBlock, dstIPBlock string, direction RuleDirection, port RulePort, srcVNicRef, dstVNicRef string) []PolicyRule {
 	var ruleType = RuleTypeNormalRule
 	if rule.DefaultPolicyRule {
 		ruleType = RuleTypeDefaultRule
+	}
+	if rule.Tier == constants.Tier0 {
+		ruleType = RuleTypeIsolationDropRule
 	}
 
 	policyRule := PolicyRule{
@@ -336,6 +363,8 @@ func (rule *CompleteRule) generateRule(srcIPBlock, dstIPBlock string, direction 
 		SrcPortMask:     port.SrcPortMask,
 		DstPortMask:     port.DstPortMask,
 		Action:          rule.Action,
+		SrcVNicRef:      srcVNicRef,
+		DstVNicRef:      dstVNicRef,
 	}
 
 	if policyRule.Tier == constants.Tier2 {
@@ -362,7 +391,7 @@ func (rule *CompleteRule) generateRule(srcIPBlock, dstIPBlock string, direction 
 		policyRule.Name = fmt.Sprintf("%s-%s", rule.RuleID, GenerateFlowKey(policyRule))
 		ruleList = append(ruleList, policyRule)
 	}
-	if utils.IsIPv6Pair(policyRule.SrcIPAddr, policyRule.DstIPAddr) {
+	if ruleType != RuleTypeIsolationDropRule && utils.IsIPv6Pair(policyRule.SrcIPAddr, policyRule.DstIPAddr) {
 		policyRuleV6 := *policyRule.DeepCopy()
 		policyRuleV6.IPFamily = unix.AF_INET6
 		policyRuleV6.Name = fmt.Sprintf("%s-%s", rule.RuleID, GenerateFlowKey(policyRuleV6))

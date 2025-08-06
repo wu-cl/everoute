@@ -11,6 +11,7 @@ import (
 	"github.com/contiv/libOpenflow/protocol"
 	"github.com/contiv/ofnet/ofctrl"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/unix"
 	klog "k8s.io/klog/v2"
@@ -33,6 +34,7 @@ const (
 const (
 	INPUT_TABLE                 = 0
 	CT_STATE_TABLE              = 1
+	ISOLATION_EGRESS_TABLE      = 3
 	PASSTHROUGH_TABLE           = 5
 	DIRECTION_SELECTION_TABLE   = 10
 	EGRESS_TIER1_TABLE          = 20
@@ -133,6 +135,7 @@ type PolicyBridge struct {
 
 	inputTable                     *ofctrl.Table
 	ctStateTable                   *ofctrl.Table
+	isolationEgressTable           *ofctrl.Table
 	passthroughTable               *ofctrl.Table
 	directionSelectionTable        *ofctrl.Table
 	egressTier1PolicyTable         *ofctrl.Table
@@ -179,6 +182,7 @@ func (p *PolicyBridge) BridgeInit() {
 
 	p.inputTable = sw.DefaultTable()
 	p.ctStateTable, _ = sw.NewTable(CT_STATE_TABLE)
+	p.isolationEgressTable, _ = sw.NewTable(ISOLATION_EGRESS_TABLE)
 	p.passthroughTable, _ = sw.NewTable(PASSTHROUGH_TABLE)
 	p.directionSelectionTable, _ = sw.NewTable(DIRECTION_SELECTION_TABLE)
 	p.ingressTier1PolicyTable, _ = sw.NewTable(INGRESS_TIER1_TABLE)
@@ -208,6 +212,9 @@ func (p *PolicyBridge) BridgeInit() {
 	}
 	if err := p.initDuplicateDropFlow(); err != nil {
 		klog.Fatalf("Failed to init duplicate packets drop flow: %s", err)
+	}
+	if err := p.initIsolateEgressTable(sw); err != nil {
+		klog.Fatalf("Failed to init inputTable, error: %v", err)
 	}
 	if err := p.initPassthroughTable(sw); err != nil {
 		klog.Fatalf("Failed to init passthroughTable, error: %v", err)
@@ -250,7 +257,7 @@ func (p *PolicyBridge) initDirectionSelectionTable() error {
 }
 
 func (p *PolicyBridge) initInputTable(_ *ofctrl.OFSwitch) error {
-	// Table 0, icmpv6 RS/RA/NS/NA passthrough
+	// Table 0, icmpv6 RS/RA/NS/NA to isolation egress filter table
 	ndpPassthroughFlow, _ := p.inputTable.NewFlow(ofctrl.FlowMatch{
 		// TODO: maybe some problems with CNI flows
 		Priority:  HIGH_MATCH_FLOW_PRIORITY + FLOW_MATCH_OFFSET,
@@ -258,7 +265,7 @@ func (p *PolicyBridge) initInputTable(_ *ofctrl.OFSwitch) error {
 		IpProto:   protocol.Type_IPv6ICMP,
 		Icmp6Type: lo.ToPtr(uint8(ipv6.ICMPTypeRouterSolicitation)),
 	})
-	if err := ndpPassthroughFlow.Next(p.passthroughTable); err != nil {
+	if err := ndpPassthroughFlow.Next(p.isolationEgressTable); err != nil {
 		return fmt.Errorf("failed to install icmpv6 ndp rs passthrough flow, error: %v", err)
 	}
 
@@ -308,7 +315,18 @@ func (p *PolicyBridge) initInputTable(_ *ofctrl.OFSwitch) error {
 	inputDefaultFlow, _ := p.inputTable.NewFlow(ofctrl.FlowMatch{
 		Priority: DEFAULT_FLOW_MISS_PRIORITY,
 	})
-	if err := inputDefaultFlow.Next(p.passthroughTable); err != nil {
+	if err := inputDefaultFlow.Next(p.isolationEgressTable); err != nil {
+		return fmt.Errorf("failed to install input default flow, error: %v", err)
+	}
+
+	return nil
+}
+
+func (p *PolicyBridge) initIsolateEgressTable(_ *ofctrl.OFSwitch) error {
+	defaultFlow, _ := p.isolationEgressTable.NewFlow(ofctrl.FlowMatch{
+		Priority: DEFAULT_FLOW_MISS_PRIORITY,
+	})
+	if err := defaultFlow.Next(p.passthroughTable); err != nil {
 		return fmt.Errorf("failed to install input default flow, error: %v", err)
 	}
 
@@ -1114,6 +1132,43 @@ func (p *PolicyBridge) GetTierTable(direction uint8, tier uint8, mode string) (*
 	return policyTable, nextTable, nil
 }
 
+func (p *PolicyBridge) addIsolationDropRule(flowID uint64, rule *EveroutePolicyRule, direction uint8) (*FlowEntry, error) {
+	entry := &FlowEntry{
+		Table:    p.isolationEgressTable,
+		FlowID:   flowID,
+		Priority: uint16(rule.Priority),
+	}
+
+	switch direction {
+	case POLICY_DIRECTION_OUT:
+		ep := p.datapathManager.GetEndpointByIfaceID(rule.SrcVNicRef)
+		if ep == nil || ep.PortNo == 0 {
+			return nil, fmt.Errorf("fail get ofport for vnic %s", rule.SrcVNicRef)
+		}
+		flow, err := p.isolationEgressTable.NewFlowWithFlowID(ofctrl.FlowMatch{
+			Priority: uint16(ep.PortNo),
+			PktMark:  0xfffff,
+		}, flowID)
+		if err != nil {
+			log.Error(err, "Failed to add flow for rule")
+			return nil, err
+		}
+		flow.Next(p.OfSwitch.DropAction())
+		entry.SrcVNicRef = rule.SrcVNicRef
+	case POLICY_DIRECTION_IN:
+		ep := p.datapathManager.GetEndpointByIfaceID(rule.DstVNicRef)
+		if ep == nil || ep.PortNo == 0 {
+			return nil, fmt.Errorf("fail to get ofport for vnic %s", rule.DstVNicRef)
+		}
+		if err := SetPortForward(ep.BridgeName, int(ep.PortNo), false); err != nil {
+			return nil, fmt.Errorf("fail to set no forward for vnic %s, ofport %d", rule.DstVNicRef, int(ep.PortNo))
+		}
+
+		entry.DstVNicRef = rule.DstVNicRef
+	}
+	return entry, nil
+}
+
 //nolint:funlen
 func (p *PolicyBridge) AddMicroSegmentRule(ctx context.Context, seqID uint32, rule *EveroutePolicyRule, direction uint8, tier uint8, mode string) (*FlowEntry, error) {
 	log := ctrl.LoggerFrom(ctx, "seqid", seqID)
@@ -1129,6 +1184,11 @@ func (p *PolicyBridge) AddMicroSegmentRule(ctx context.Context, seqID uint32, ru
 	if err != nil {
 		return nil, err
 	}
+
+	if tier == POLICY_TIER1 && (rule.SrcVNicRef != "" || rule.DstVNicRef != "") {
+		return p.addIsolationDropRule(flowID, rule, direction)
+	}
+
 	// Different tier have different nextTable select strategy:
 	policyTable, nextTable, e := p.GetTierTable(direction, tier, mode)
 	if e != nil {

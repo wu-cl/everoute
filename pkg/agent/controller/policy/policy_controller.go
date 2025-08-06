@@ -246,7 +246,7 @@ func (r *Reconciler) ruleUpdateByGroup(ctx context.Context, gm *groupv1alpha1.Gr
 		oldRuleList = append(oldRuleList, rule.ListRules(ctx, r.groupCache)...)
 		srcIPs := r.getRuleIPBlocksForUpdateGroupMembers(ctx, rule.SrcIPs, rule.SrcGroups, gm)
 		dstIPs := r.getRuleIPBlocksForUpdateGroupMembers(ctx, rule.DstIPs, rule.DstGroups, gm)
-		newRuleList = append(newRuleList, rule.GenerateRuleList(ctx, srcIPs, dstIPs, rule.Ports)...)
+		newRuleList = append(newRuleList, rule.GenerateRuleList(ctx, srcIPs, dstIPs, rule.Ports, r.groupCache)...)
 		if err := r.syncPolicyRulesUntilSuccess(ctx, []string{rule.Policy}, oldRuleList, newRuleList); err != nil {
 			return err
 		}
